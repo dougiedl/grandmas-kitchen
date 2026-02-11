@@ -1,0 +1,19 @@
+{
+  "name": "grandmas-kitchen",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @gk/web",
+    "build": "npm run build --workspace @gk/web",
+    "start": "npm run start --workspace @gk/web",
+    "lint": "npm run lint --workspace @gk/web",
+    "typecheck": "npm run typecheck --workspace @gk/web",
+    "test": "npm run test --workspace @gk/web",
+    "db:migrate": "./scripts/db-migrate.sh",
+    "db:seed": "./scripts/db-seed.sh"
+  }
+}

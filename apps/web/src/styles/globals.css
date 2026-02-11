@@ -1,0 +1,114 @@
+:root {
+  --cream: #f5efe4;
+  --cocoa: #4a2f24;
+  --terracotta: #b86a3b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--cocoa);
+  background: var(--cream);
+}
+
+.site-header {
+  border-bottom: 1px solid #d8b26e;
+  padding: 1rem 1.25rem;
+}
+
+.site-header h1 {
+  margin: 0;
+}
+
+.top-nav {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.nav-link {
+  color: var(--terracotta);
+  text-decoration: none;
+}
+
+.nav-link-active {
+  border-bottom: 2px solid var(--terracotta);
+  color: var(--cocoa);
+  font-weight: 700;
+}
+
+.auth-row {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.auth-email {
+  color: #6a4a3a;
+  font-size: 0.95rem;
+}
+
+.page-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.signin-prompt {
+  background: #fbe8d2;
+  border: 1px solid #d8b26e;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.persona-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 1rem;
+}
+
+.persona-card {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.persona-card h4 {
+  margin: 0;
+}
+
+.persona-cuisine {
+  color: #6a4a3a;
+  font-weight: 700;
+  margin: 0.35rem 0 0.55rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chip {
+  background: #f5e0c9;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.5rem;
+}
+
+.error-panel {
+  background: #fff1e8;
+  border: 1px solid #b86a3b;
+  border-radius: 12px;
+  margin: 2rem auto;
+  max-width: 640px;
+  padding: 1rem;
+}
