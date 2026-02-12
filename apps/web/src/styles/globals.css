@@ -422,6 +422,26 @@ body {
   padding: 0.8rem;
 }
 
+.readiness-panel {
+  background: #fff8ef;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  margin: 0 0 1rem;
+  padding: 0.8rem;
+}
+
+.readiness-pass {
+  color: #2e5d3f;
+}
+
+.readiness-warn {
+  color: #8a5a16;
+}
+
+.readiness-fail {
+  color: #8f2f2f;
+}
+
 .history-list {
   display: grid;
   gap: 0.55rem;

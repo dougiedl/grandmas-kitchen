@@ -33,6 +33,20 @@ type CuisineQualityRow = {
   avg_minutes: string | null;
 };
 
+type FreshnessRow = {
+  last_generated_at: string | null;
+  last_feedback_at: string | null;
+};
+
+type ReadinessLevel = "pass" | "warn" | "fail";
+
+type ReadinessCheck = {
+  label: string;
+  value: string;
+  level: ReadinessLevel;
+  guidance?: string;
+};
+
 function toNumber(value: string | null | undefined): number {
   if (!value) {
     return 0;
@@ -122,12 +136,71 @@ export default async function AdminEvalsPage() {
     `,
   );
 
+  const freshnessResult = await pool.query<FreshnessRow>(
+    `
+      select
+        (select max(created_at)::text from analytics_events where event_name = 'recipe_generated') as last_generated_at,
+        (select max(created_at)::text from recipe_feedback) as last_feedback_at
+    `,
+  );
+
   const summary = summaryResult.rows[0];
+  const freshness = freshnessResult.rows[0];
   const totalRecipes = toNumber(summary.total_recipes);
+  const promotedCount = toNumber(summary.promoted_count);
   const totalFeedback = feedbackResult.rows.reduce((sum, row) => sum + toNumber(row.count), 0);
   const tooSalty = toNumber(feedbackResult.rows.find((row) => row.category === "too_salty")?.count);
   const tooBland = toNumber(feedbackResult.rows.find((row) => row.category === "too_bland")?.count);
   const recipeGeneratedEvents = toNumber(eventResult.rows.find((row) => row.event_name === "recipe_generated")?.count);
+
+  const feedbackCaptureRate =
+    recipeGeneratedEvents > 0 ? totalFeedback / recipeGeneratedEvents : 0;
+  const complaintRatio = totalFeedback > 0 ? (tooSalty + tooBland) / totalFeedback : 0;
+  const promotedCoverage = totalRecipes > 0 ? promotedCount / totalRecipes : 0;
+
+  const hoursSinceGenerated = freshness.last_generated_at
+    ? (Date.now() - new Date(freshness.last_generated_at).getTime()) / 3_600_000
+    : Number.POSITIVE_INFINITY;
+
+  const readinessChecks: ReadinessCheck[] = [
+    {
+      label: "Data freshness",
+      value:
+        hoursSinceGenerated === Number.POSITIVE_INFINITY
+          ? "No generation events found"
+          : `${hoursSinceGenerated.toFixed(1)}h since last recipe generation`,
+      level: hoursSinceGenerated <= 24 ? "pass" : hoursSinceGenerated <= 72 ? "warn" : "fail",
+      guidance: "Keep generation events active for realistic readiness signals.",
+    },
+    {
+      label: "14-day generation volume",
+      value: `${recipeGeneratedEvents} recipe_generated events`,
+      level: recipeGeneratedEvents >= 20 ? "pass" : recipeGeneratedEvents >= 10 ? "warn" : "fail",
+      guidance: "Target >= 20 events in 14 days before wider rollout.",
+    },
+    {
+      label: "Feedback capture rate",
+      value: `${(feedbackCaptureRate * 100).toFixed(1)}%`,
+      level: feedbackCaptureRate >= 0.08 ? "pass" : feedbackCaptureRate >= 0.04 ? "warn" : "fail",
+      guidance: "Increase in-product feedback prompts if below 8%.",
+    },
+    {
+      label: "Salt/bland complaint ratio",
+      value: `${(complaintRatio * 100).toFixed(1)}%`,
+      level: complaintRatio <= 0.4 ? "pass" : complaintRatio <= 0.55 ? "warn" : "fail",
+      guidance: "Tune seasoning defaults and aromatic depth if complaints are high.",
+    },
+    {
+      label: "Promoted version coverage",
+      value: `${(promotedCoverage * 100).toFixed(1)}%`,
+      level: promotedCoverage >= 0.1 ? "pass" : promotedCoverage >= 0.05 ? "warn" : "fail",
+      guidance: "Promote successful recipe variants to set stronger defaults.",
+    },
+  ];
+
+  const hasFail = readinessChecks.some((check) => check.level === "fail");
+  const hasWarn = readinessChecks.some((check) => check.level === "warn");
+  const readinessLabel = hasFail ? "Not Ready" : hasWarn ? "Caution" : "Ready";
 
   const alerts: string[] = [];
   if (totalRecipes >= 10 && totalFeedback / totalRecipes > 0.8) {
@@ -157,6 +230,18 @@ export default async function AdminEvalsPage() {
         <ul>
           {alerts.map((alert) => (
             <li key={alert}>{alert}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="readiness-panel">
+        <h3>Release Readiness: {readinessLabel}</h3>
+        <ul>
+          {readinessChecks.map((check) => (
+            <li key={check.label} className={`readiness-${check.level}`}>
+              <strong>{check.label}:</strong> {check.value}
+              {check.guidance ? ` — ${check.guidance}` : ""}
+            </li>
           ))}
         </ul>
       </div>
