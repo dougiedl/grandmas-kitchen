@@ -12,6 +12,7 @@ type MessagePayload = {
   content?: string;
   regenerationStyle?: RegenerationStyle;
   regenerateFromLatest?: boolean;
+  instruction?: string;
 };
 
 export async function POST(
@@ -68,6 +69,11 @@ export async function POST(
     return NextResponse.json({ error: "Message content is required" }, { status: 400 });
   }
 
+  const instruction = body.instruction?.trim();
+  const generationPrompt = instruction
+    ? `${basePrompt}\n\nRequested adjustment: ${instruction}`
+    : basePrompt;
+
   let userMessageId: string | null = null;
   if (!body.regenerateFromLatest) {
     userMessageId = randomUUID();
@@ -80,7 +86,7 @@ export async function POST(
   const recipe = await generateRecipe({
     personaName: thread.persona_name ?? "Grandma",
     cuisine: thread.cuisine ?? "Home Style",
-    prompt: basePrompt,
+    prompt: generationPrompt,
     regenerationStyle,
   });
 

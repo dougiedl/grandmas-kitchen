@@ -253,6 +253,31 @@ body {
   padding: 0.3rem 0.65rem;
 }
 
+.feedback-followup {
+  align-items: center;
+  background: #fff8ef;
+  border: 1px solid #ead1ad;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.feedback-followup p {
+  margin: 0;
+}
+
+.feedback-followup button {
+  background: #f5e0c9;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  color: #4a2f24;
+  cursor: pointer;
+  padding: 0.3rem 0.65rem;
+}
+
 .recipe-list-grid {
   display: grid;
   gap: 1rem;

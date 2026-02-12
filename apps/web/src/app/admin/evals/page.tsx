@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth/auth";
 import { getPool } from "@/lib/db/pool";
+import Link from "next/link";
 
 type SummaryRow = {
   total_recipes: string;
@@ -22,6 +23,13 @@ type EventRow = {
 type RegenRow = {
   regeneration_style: string | null;
   count: string;
+};
+
+type CuisineQualityRow = {
+  cuisine: string;
+  recipe_count: string;
+  feedback_count: string;
+  avg_minutes: string | null;
 };
 
 export default async function AdminEvalsPage() {
@@ -81,12 +89,30 @@ export default async function AdminEvalsPage() {
     `,
   );
 
+  const cuisineResult = await pool.query<CuisineQualityRow>(
+    `
+      select
+        coalesce(r.cuisine, 'Home Style') as cuisine,
+        count(distinct r.id)::text as recipe_count,
+        count(f.id)::text as feedback_count,
+        to_char(avg(r.total_minutes), 'FM999999.00') as avg_minutes
+      from recipes r
+      left join recipe_feedback f on f.recipe_id = r.id
+      group by coalesce(r.cuisine, 'Home Style')
+      order by count(distinct r.id) desc
+      limit 12
+    `,
+  );
+
   const summary = summaryResult.rows[0];
 
   return (
     <section>
       <h2>Admin Eval Dashboard</h2>
       <p>Quality and usage telemetry snapshot (last 14 days where applicable).</p>
+      <p>
+        <Link href="/api/admin/evals/report">Download Weekly CSV Report</Link>
+      </p>
 
       <div className="admin-grid">
         <article className="admin-card">
@@ -129,6 +155,18 @@ export default async function AdminEvalsPage() {
             {regenResult.rows.map((row) => (
               <li key={row.regeneration_style ?? "initial"}>
                 {row.regeneration_style ?? "initial"}: {row.count}
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="admin-card">
+          <h3>Cuisine Quality</h3>
+          {cuisineResult.rows.length === 0 ? <p>No cuisine metrics yet.</p> : null}
+          <ul>
+            {cuisineResult.rows.map((row) => (
+              <li key={row.cuisine}>
+                {row.cuisine}: recipes {row.recipe_count}, feedback {row.feedback_count}, avg {row.avg_minutes ?? "-"}m
               </li>
             ))}
           </ul>

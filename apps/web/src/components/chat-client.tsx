@@ -47,6 +47,13 @@ type SendMessagePayload = {
   content?: string;
   regenerationStyle?: RegenerationStyle;
   regenerateFromLatest?: boolean;
+  instruction?: string;
+};
+
+type SuggestedFix = {
+  label: string;
+  instruction: string;
+  regenerationStyle?: RegenerationStyle;
 };
 
 export function ChatClient({
@@ -64,6 +71,7 @@ export function ChatClient({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggestedFix, setSuggestedFix] = useState<SuggestedFix | null>(null);
 
   async function toApiError(response: Response, fallback: string) {
     try {
@@ -192,6 +200,7 @@ export function ChatClient({
         data.userMessage ? [...current, data.userMessage, data.assistantMessage] : [...current, data.assistantMessage],
       );
       setInput("");
+      setSuggestedFix(null);
       await refreshThreads();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to send message");
@@ -285,6 +294,49 @@ export function ChatClient({
       setError(data.error ?? "Unable to submit feedback");
       return;
     }
+
+    if (category === "too_salty") {
+      setSuggestedFix({
+        label: "Apply lower-salt revision",
+        instruction: "Reduce salt intensity by 25 percent and balance with acidity and herbs.",
+      });
+      return;
+    }
+
+    if (category === "too_bland") {
+      setSuggestedFix({
+        label: "Boost flavor depth",
+        instruction: "Increase aromatic layering, add acid, and deepen seasoning.",
+        regenerationStyle: "traditional",
+      });
+      return;
+    }
+
+    if (category === "too_long") {
+      setSuggestedFix({
+        label: "Create a weeknight version",
+        instruction: "Reduce prep complexity and keep total time under 30 minutes.",
+        regenerationStyle: "faster",
+      });
+      return;
+    }
+
+    setSuggestedFix({
+      label: "Tone down spice",
+      instruction: "Reduce chili heat and keep flavor using aromatics and mild herbs.",
+    });
+  }
+
+  async function applySuggestedFix() {
+    if (!suggestedFix) {
+      return;
+    }
+
+    await sendMessage({
+      regenerateFromLatest: true,
+      regenerationStyle: suggestedFix.regenerationStyle,
+      instruction: suggestedFix.instruction,
+    });
   }
 
   return (
@@ -395,6 +447,14 @@ export function ChatClient({
                 Too Spicy
               </button>
             </div>
+            {suggestedFix ? (
+              <div className="feedback-followup">
+                <p>{suggestedFix.label}</p>
+                <button type="button" onClick={applySuggestedFix} disabled={isLoading}>
+                  Apply Fix
+                </button>
+              </div>
+            ) : null}
 
             <h4>Recipe History</h4>
             <div className="history-list">
