@@ -321,6 +321,16 @@ body {
   padding: 0.35rem 0.7rem;
 }
 
+.detail-link-btn {
+  background: #f5e0c9;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  color: #4a2f24;
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  text-decoration: none;
+}
+
 .detail-actions-row button:disabled {
   cursor: not-allowed;
   opacity: 0.55;

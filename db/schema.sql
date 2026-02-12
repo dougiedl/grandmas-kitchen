@@ -56,6 +56,7 @@ create table if not exists recipes (
   servings int,
   total_minutes int,
   is_favorite boolean not null default false,
+  is_promoted boolean not null default false,
   recipe_json jsonb not null,
   created_at timestamptz not null default now()
 );
@@ -65,3 +66,6 @@ create index if not exists idx_recipes_user_created
 
 create index if not exists idx_recipes_user_favorite_created
   on recipes (user_id, is_favorite, created_at desc);
+
+create index if not exists idx_recipes_user_promoted_created
+  on recipes (user_id, is_promoted, created_at desc);

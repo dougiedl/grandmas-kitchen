@@ -42,11 +42,13 @@ function toExportText(data: RecipeExportData): string {
 export function RecipeDetailActions({
   recipeId,
   compareId,
+  compareIsPromoted,
   versions,
   exportData,
 }: {
   recipeId: string;
   compareId?: string;
+  compareIsPromoted?: boolean;
   versions: VersionOption[];
   exportData: RecipeExportData;
 }) {
@@ -105,15 +107,48 @@ export function RecipeDetailActions({
     }
   }
 
+  async function onPromoteCompared() {
+    if (!compareId) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/recipes/${compareId}/promote`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? "Promotion failed");
+      }
+
+      router.push(`/recipes/${compareId}`);
+      router.refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Promotion failed");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <section className="detail-actions">
       <div className="detail-actions-row">
         <button type="button" onClick={onPrint}>
           Print Card
         </button>
+        <a className="detail-link-btn" href={`/api/recipes/${recipeId}/card`} target="_blank" rel="noreferrer">
+          Open Print Card
+        </a>
         <button type="button" onClick={onExport}>
           Export TXT
         </button>
+        <a className="detail-link-btn" href={`/recipes/${recipeId}/versions`}>
+          Full Timeline
+        </a>
       </div>
 
       <div className="detail-actions-row">
@@ -151,6 +186,11 @@ export function RecipeDetailActions({
         <button type="button" disabled={isLoading} onClick={() => onRegenerate("faster")}>Faster</button>
         <button type="button" disabled={isLoading} onClick={() => onRegenerate("traditional")}>Traditional</button>
         <button type="button" disabled={isLoading} onClick={() => onRegenerate("vegetarian")}>Vegetarian</button>
+        {compareId ? (
+          <button type="button" disabled={isLoading || compareIsPromoted} onClick={onPromoteCompared}>
+            {compareIsPromoted ? "Compared Version Promoted" : "Promote Compared Version"}
+          </button>
+        ) : null}
       </div>
 
       {error ? <p className="error-text">{error}</p> : null}

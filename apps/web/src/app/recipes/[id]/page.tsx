@@ -19,6 +19,7 @@ type RecipeDetailRecord = {
   servings: number | null;
   total_minutes: number | null;
   is_favorite: boolean;
+  is_promoted: boolean;
   created_at: string;
   recipe_json: RecipeJson | null;
 };
@@ -27,6 +28,7 @@ type VersionRow = {
   id: string;
   title: string;
   total_minutes: number | null;
+  is_promoted: boolean;
   created_at: string;
   recipe_json: RecipeJson | null;
 };
@@ -79,7 +81,7 @@ export default async function RecipeDetailPage({
   const pool = getPool();
   const result = await pool.query<RecipeDetailRecord>(
     `
-      select r.id, r.user_id, r.thread_id, r.title, r.cuisine, r.servings, r.total_minutes, r.is_favorite, r.created_at, r.recipe_json
+      select r.id, r.user_id, r.thread_id, r.title, r.cuisine, r.servings, r.total_minutes, r.is_favorite, r.is_promoted, r.created_at, r.recipe_json
       from recipes r
       join users u on u.id = r.user_id
       where r.id = $1 and u.email = $2
@@ -95,7 +97,7 @@ export default async function RecipeDetailPage({
 
   const versionsResult = await pool.query<VersionRow>(
     `
-      select r.id, r.title, r.total_minutes, r.created_at, r.recipe_json
+      select r.id, r.title, r.total_minutes, r.is_promoted, r.created_at, r.recipe_json
       from recipes r
       where r.user_id = $1 and (
         (r.thread_id is not distinct from $2)
@@ -138,12 +140,17 @@ export default async function RecipeDetailPage({
       <p>
         {recipe.cuisine ?? "Home Style"} • {recipe.servings ?? "-"} servings • {recipe.total_minutes ?? "-"} min
       </p>
-      <p>{recipe.is_favorite ? "Favorite recipe" : "Not marked favorite"}</p>
+      <p>
+        {recipe.is_promoted ? "Promoted" : ""}
+        {recipe.is_promoted && recipe.is_favorite ? " • " : ""}
+        {recipe.is_favorite ? "Favorite recipe" : "Not marked favorite"}
+      </p>
       <p className="recipe-list-date">Saved {new Date(recipe.created_at).toLocaleString()}</p>
 
       <RecipeDetailActions
         recipeId={recipe.id}
         compareId={compareRecipe?.id}
+        compareIsPromoted={compareRecipe?.is_promoted}
         versions={versionOptions}
         exportData={{
           title: recipe.title,

@@ -10,6 +10,7 @@ type RecipeItem = {
   servings: number | null;
   total_minutes: number | null;
   is_favorite: boolean;
+  is_promoted: boolean;
   created_at: string;
   recipe_json: {
     ingredients?: Array<{ amount: string; item: string }>;
@@ -101,6 +102,11 @@ export function RecipesListClient({ initialRecipes }: { initialRecipes: RecipeIt
               {recipe.cuisine ?? "Home Style"} • {recipe.servings ?? "-"} servings • {recipe.total_minutes ?? "-"} min
             </p>
             <p className="recipe-list-date">Saved {new Date(recipe.created_at).toLocaleString()}</p>
+            <p>
+              {recipe.is_promoted ? "Promoted" : ""}
+              {recipe.is_promoted && recipe.is_favorite ? " • " : ""}
+              {recipe.is_favorite ? "Favorite" : ""}
+            </p>
             <h4>Ingredients</h4>
             <ul>
               {(recipe.recipe_json?.ingredients ?? []).slice(0, 6).map((ingredient) => (
