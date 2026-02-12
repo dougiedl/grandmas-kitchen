@@ -243,6 +243,21 @@ body {
   margin-top: 0.9rem;
 }
 
+.recipes-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin: 0.8rem 0 1rem;
+}
+
+.recipes-toolbar input[type="text"] {
+  border: 1px solid #d8b26e;
+  border-radius: 10px;
+  max-width: 340px;
+  padding: 0.55rem 0.7rem;
+}
+
 .recipe-list-card {
   background: #f8f2e9;
   border: 1px solid #d8b26e;
@@ -250,9 +265,36 @@ body {
   padding: 1rem;
 }
 
+.fav-btn {
+  background: #f5e0c9;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  color: #4a2f24;
+  cursor: pointer;
+  margin-top: 0.7rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.fav-btn-on {
+  background: #b86a3b;
+  color: #fff8ef;
+}
+
 .recipe-list-date {
   color: #6a4a3a;
   font-size: 0.85rem;
+}
+
+.history-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.history-item {
+  background: #fff8ef;
+  border: 1px solid #ead1ad;
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
 }
 
 .error-text {

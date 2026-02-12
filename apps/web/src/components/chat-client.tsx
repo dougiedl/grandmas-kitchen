@@ -228,6 +228,38 @@ export function ChatClient({
     .reverse()
     .find((message) => message.parsed_entities?.recipe)?.parsed_entities?.recipe;
 
+  const recipeHistory = messages
+    .filter((message) => message.role === "assistant" && message.parsed_entities?.recipe)
+    .map((message) => ({
+      id: message.id,
+      recipe: message.parsed_entities?.recipe as Recipe,
+      regenerationStyle: message.parsed_entities?.regenerationStyle,
+    }))
+    .reverse();
+
+  function summarizeDiff(current: Recipe, previous?: Recipe): string {
+    if (!previous) {
+      return "Initial version";
+    }
+
+    const changes: string[] = [];
+    if (current.title !== previous.title) {
+      changes.push("dish title changed");
+    }
+    if (current.totalMinutes !== previous.totalMinutes) {
+      changes.push(`time ${previous.totalMinutes}m -> ${current.totalMinutes}m`);
+    }
+    if (current.ingredients.length !== previous.ingredients.length) {
+      changes.push(
+        `ingredient count ${previous.ingredients.length} -> ${current.ingredients.length}`,
+      );
+    }
+    if (changes.length === 0) {
+      return "Minor wording/technique adjustments";
+    }
+    return changes.join(" • ");
+  }
+
   return (
     <section className="chat-layout">
       <aside className="chat-sidebar">
@@ -321,6 +353,23 @@ export function ChatClient({
                 <li key={tip}>{tip}</li>
               ))}
             </ul>
+
+            <h4>Recipe History</h4>
+            <div className="history-list">
+              {recipeHistory.map((entry, index) => {
+                const previous = recipeHistory[index + 1]?.recipe;
+                return (
+                  <article className="history-item" key={entry.id}>
+                    <strong>v{recipeHistory.length - index}</strong>
+                    <p>
+                      {entry.recipe.title}
+                      {entry.regenerationStyle ? ` (${entry.regenerationStyle})` : ""}
+                    </p>
+                    <p className="recipe-list-date">{summarizeDiff(entry.recipe, previous)}</p>
+                  </article>
+                );
+              })}
+            </div>
           </section>
         ) : null}
       </div>
