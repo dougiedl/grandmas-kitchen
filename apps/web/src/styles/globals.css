@@ -285,6 +285,69 @@ body {
   font-size: 0.85rem;
 }
 
+.recipe-detail {
+  max-width: 900px;
+}
+
+.detail-actions {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  margin: 1rem 0;
+  padding: 0.9rem;
+}
+
+.detail-actions-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.detail-actions-row select,
+.detail-actions-row textarea {
+  border: 1px solid #d8b26e;
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem;
+}
+
+.detail-actions-row button {
+  background: #f5e0c9;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  color: #4a2f24;
+  cursor: pointer;
+  padding: 0.35rem 0.7rem;
+}
+
+.detail-actions-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.detail-actions-stack {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.detail-actions-stack textarea {
+  width: 100%;
+}
+
+.compare-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.compare-card {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
 .history-list {
   display: grid;
   gap: 0.55rem;
