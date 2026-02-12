@@ -414,6 +414,14 @@ body {
   padding: 0.85rem;
 }
 
+.alerts-panel {
+  background: #fff8ef;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  margin: 0.9rem 0 1rem;
+  padding: 0.8rem;
+}
+
 .history-list {
   display: grid;
   gap: 0.55rem;

@@ -59,12 +59,25 @@ export function RecipeDetailActions({
 
   const exportText = useMemo(() => toExportText(exportData), [exportData]);
 
+  async function trackEvent(eventName: string, eventProps?: Record<string, unknown>) {
+    try {
+      await fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventName, eventProps }),
+      });
+    } catch {
+      // Non-blocking analytics
+    }
+  }
+
   function onCompareChange(nextCompareId: string) {
     const target = nextCompareId ? `/recipes/${recipeId}?compare=${nextCompareId}` : `/recipes/${recipeId}`;
     router.push(target);
   }
 
   function onPrint() {
+    void trackEvent("recipe_print_clicked", { recipeId });
     window.print();
   }
 
@@ -76,6 +89,7 @@ export function RecipeDetailActions({
     anchor.download = `${exportData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`;
     anchor.click();
     URL.revokeObjectURL(url);
+    void trackEvent("recipe_export_txt_clicked", { recipeId });
   }
 
   async function onRegenerate(style?: RegenerationStyle) {
@@ -98,6 +112,11 @@ export function RecipeDetailActions({
       }
 
       const data = (await response.json()) as { recipeId: string };
+      await trackEvent("recipe_regenerated_from_detail_client", {
+        sourceRecipeId: recipeId,
+        newRecipeId: data.recipeId,
+        regenerationStyle: style ?? null,
+      });
       router.push(`/recipes/${data.recipeId}`);
       router.refresh();
     } catch (cause) {
@@ -125,6 +144,10 @@ export function RecipeDetailActions({
         throw new Error(data.error ?? "Promotion failed");
       }
 
+      await trackEvent("recipe_promoted", {
+        sourceRecipeId: recipeId,
+        promotedRecipeId: compareId,
+      });
       router.push(`/recipes/${compareId}`);
       router.refresh();
     } catch (cause) {

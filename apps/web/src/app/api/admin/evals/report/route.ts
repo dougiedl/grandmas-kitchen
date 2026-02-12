@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
+import { isAdminEmail } from "@/lib/auth/is-admin";
 import { getPool } from "@/lib/db/pool";
 
 function csvEscape(value: string | number | null): string {
@@ -20,6 +21,10 @@ export async function GET() {
 
   if (!email) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  if (!isAdminEmail(email)) {
+    return new NextResponse("Forbidden", { status: 403 });
   }
 
   const pool = getPool();

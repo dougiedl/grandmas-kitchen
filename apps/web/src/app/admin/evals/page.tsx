@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth/auth";
+import { isAdminEmail } from "@/lib/auth/is-admin";
 import { getPool } from "@/lib/db/pool";
 import Link from "next/link";
 
@@ -32,6 +33,14 @@ type CuisineQualityRow = {
   avg_minutes: string | null;
 };
 
+function toNumber(value: string | null | undefined): number {
+  if (!value) {
+    return 0;
+  }
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export default async function AdminEvalsPage() {
   const session = await auth();
   const email = session?.user?.email;
@@ -41,6 +50,15 @@ export default async function AdminEvalsPage() {
       <section>
         <h2>Admin Evals</h2>
         <p>Please sign in.</p>
+      </section>
+    );
+  }
+
+  if (!isAdminEmail(email)) {
+    return (
+      <section>
+        <h2>Admin Evals</h2>
+        <p>Admin access required.</p>
       </section>
     );
   }
@@ -105,6 +123,25 @@ export default async function AdminEvalsPage() {
   );
 
   const summary = summaryResult.rows[0];
+  const totalRecipes = toNumber(summary.total_recipes);
+  const totalFeedback = feedbackResult.rows.reduce((sum, row) => sum + toNumber(row.count), 0);
+  const tooSalty = toNumber(feedbackResult.rows.find((row) => row.category === "too_salty")?.count);
+  const tooBland = toNumber(feedbackResult.rows.find((row) => row.category === "too_bland")?.count);
+  const recipeGeneratedEvents = toNumber(eventResult.rows.find((row) => row.event_name === "recipe_generated")?.count);
+
+  const alerts: string[] = [];
+  if (totalRecipes >= 10 && totalFeedback / totalRecipes > 0.8) {
+    alerts.push("High feedback volume vs recipe volume. Review generation quality controls.");
+  }
+  if (totalFeedback > 0 && tooSalty / totalFeedback > 0.35) {
+    alerts.push("Salt complaints exceed 35%. Consider lowering default salt guidance.");
+  }
+  if (totalFeedback > 0 && tooBland / totalFeedback > 0.35) {
+    alerts.push("Blandness complaints exceed 35%. Consider stronger aromatic layering.");
+  }
+  if (recipeGeneratedEvents > 100 && totalFeedback < 5) {
+    alerts.push("High generation volume with low feedback capture. Prompt for feedback more aggressively.");
+  }
 
   return (
     <section>
@@ -113,6 +150,16 @@ export default async function AdminEvalsPage() {
       <p>
         <Link href="/api/admin/evals/report">Download Weekly CSV Report</Link>
       </p>
+
+      <div className="alerts-panel">
+        <h3>Quality Alerts</h3>
+        {alerts.length === 0 ? <p>No active alerts.</p> : null}
+        <ul>
+          {alerts.map((alert) => (
+            <li key={alert}>{alert}</li>
+          ))}
+        </ul>
+      </div>
 
       <div className="admin-grid">
         <article className="admin-card">

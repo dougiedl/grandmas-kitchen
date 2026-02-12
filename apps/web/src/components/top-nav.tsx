@@ -8,15 +8,17 @@ const NAV_ITEMS = [
   { href: "/chat", label: "Chat" },
   { href: "/profile", label: "Profile" },
   { href: "/recipes", label: "Recipes" },
-  { href: "/admin/evals", label: "Admin" },
 ];
 
-export function TopNav() {
+export function TopNav({ showAdmin }: { showAdmin: boolean }) {
   const pathname = usePathname();
+  const navItems = showAdmin
+    ? [...NAV_ITEMS, { href: "/admin/evals", label: "Admin" }]
+    : NAV_ITEMS;
 
   return (
     <nav aria-label="Primary navigation" className="top-nav">
-      {NAV_ITEMS.map((item) => {
+      {navItems.map((item) => {
         const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
         return (

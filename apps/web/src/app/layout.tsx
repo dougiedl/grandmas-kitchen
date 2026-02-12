@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
 import { auth } from "@/lib/auth/auth";
+import { isAdminEmail } from "@/lib/auth/is-admin";
 import { TopNav } from "@/components/top-nav";
 import Link from "next/link";
 import type { Session } from "next-auth";
@@ -20,13 +21,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch (error) {
     console.error("Auth session load failed in layout", error);
   }
+  const showAdmin = isAdminEmail(session?.user?.email);
 
   return (
     <html lang="en">
       <body>
         <header className="site-header">
           <h1>Grandma&apos;s Kitchen</h1>
-          <TopNav />
+          <TopNav showAdmin={showAdmin} />
           <div className="auth-row">
             {session?.user?.email ? (
               <>

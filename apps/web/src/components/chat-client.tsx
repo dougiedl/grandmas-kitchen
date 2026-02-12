@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RegenerationStyle } from "@/lib/chat/recipe-schema";
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
@@ -71,7 +71,20 @@ export function ChatClient({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const startThreadInFlightRef = useRef(false);
   const [suggestedFix, setSuggestedFix] = useState<SuggestedFix | null>(null);
+
+  async function trackEvent(eventName: string, eventProps?: Record<string, unknown>) {
+    try {
+      await fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventName, eventProps }),
+      });
+    } catch {
+      // Non-blocking analytics
+    }
+  }
 
   async function toApiError(response: Response, fallback: string) {
     try {
@@ -111,10 +124,11 @@ export function ChatClient({
 
   useEffect(() => {
     async function startThread() {
-      if (threadId || !activePersonaId) {
+      if (threadId || !activePersonaId || startThreadInFlightRef.current) {
         return;
       }
 
+      startThreadInFlightRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -132,10 +146,15 @@ export function ChatClient({
         const data = (await response.json()) as { threadId: string };
         setThreadId(data.threadId);
         router.replace(`/chat?persona=${activePersonaId}&thread=${data.threadId}`);
+        await trackEvent("chat_thread_started", {
+          personaId: activePersonaId,
+          threadId: data.threadId,
+        });
         await refreshThreads();
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : "Unable to start chat");
       } finally {
+        startThreadInFlightRef.current = false;
         setIsLoading(false);
       }
     }
@@ -194,6 +213,7 @@ export function ChatClient({
       const data = (await response.json()) as {
         userMessage: Message | null;
         assistantMessage: Message;
+        recipeId?: string;
       };
 
       setMessages((current) =>
@@ -201,6 +221,12 @@ export function ChatClient({
       );
       setInput("");
       setSuggestedFix(null);
+      await trackEvent("chat_message_sent", {
+        threadId,
+        regenerationStyle: payload.regenerationStyle ?? null,
+        usedInstruction: Boolean(payload.instruction),
+        recipeId: data.recipeId ?? data.assistantMessage.parsed_entities?.recipeId ?? null,
+      });
       await refreshThreads();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to send message");
@@ -295,6 +321,11 @@ export function ChatClient({
       return;
     }
 
+    await trackEvent("chat_feedback_submitted", {
+      recipeId: latestRecipeId,
+      category,
+    });
+
     if (category === "too_salty") {
       setSuggestedFix({
         label: "Apply lower-salt revision",
@@ -336,6 +367,10 @@ export function ChatClient({
       regenerateFromLatest: true,
       regenerationStyle: suggestedFix.regenerationStyle,
       instruction: suggestedFix.instruction,
+    });
+    await trackEvent("chat_suggested_fix_applied", {
+      threadId,
+      label: suggestedFix.label,
     });
   }
 

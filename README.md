@@ -47,6 +47,8 @@ cp .env.example .env.local
 # Optional: enable real model generation instead of mock fallback
 # OPENAI_API_KEY=...
 # OPENAI_MODEL=gpt-4.1-mini
+# Optional: admin dashboard allowlist
+# ADMIN_EMAILS=you@example.com,teammate@example.com
 
 # 4) Run migrations
 npm run db:migrate
