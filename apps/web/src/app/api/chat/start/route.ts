@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth/auth";
 import { getPool } from "@/lib/db/pool";
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
 import { upsertTasteProfile } from "@/lib/personalization/profile";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -33,7 +34,32 @@ export async function POST(request: NextRequest) {
   );
 
   const userId = userResult.rows[0]?.id as string;
+  const limiter = checkRateLimit({
+    request,
+    userKey: userId,
+    routeKey: "chat_start",
+    max: 20,
+    windowMs: 60_000,
+  });
+  if (!limiter.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded. Please wait and try again." }, { status: 429 });
+  }
+
   const threadId = randomUUID();
+
+  await pool.query(
+    `
+      insert into grandma_personas (id, name, cuisine, style_summary, active)
+      values ($1, $2, $3, $4, true)
+      on conflict (id)
+      do update set
+        name = excluded.name,
+        cuisine = excluded.cuisine,
+        style_summary = excluded.style_summary,
+        active = true
+    `,
+    [persona.id, persona.name, persona.cuisine, persona.summary],
+  );
 
   await pool.query(
     `insert into conversation_threads (id, user_id, persona_id) values ($1, $2, $3)`,

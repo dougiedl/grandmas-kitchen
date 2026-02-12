@@ -157,6 +157,39 @@ export function RecipeDetailActions({
     }
   }
 
+  async function onSaveFamilyVersion() {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/recipes/${recipeId}/family-version`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          note: instruction.trim() || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? "Unable to save family version");
+      }
+
+      const data = (await response.json()) as { recipeId: string };
+      await trackEvent("recipe_family_version_saved_client", {
+        sourceRecipeId: recipeId,
+        familyRecipeId: data.recipeId,
+        hasNote: Boolean(instruction.trim()),
+      });
+      router.push(`/recipes/${data.recipeId}`);
+      router.refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to save family version");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <section className="detail-actions">
       <div className="detail-actions-row">
@@ -209,6 +242,9 @@ export function RecipeDetailActions({
         <button type="button" disabled={isLoading} onClick={() => onRegenerate("faster")}>Faster</button>
         <button type="button" disabled={isLoading} onClick={() => onRegenerate("traditional")}>Traditional</button>
         <button type="button" disabled={isLoading} onClick={() => onRegenerate("vegetarian")}>Vegetarian</button>
+        <button type="button" disabled={isLoading} onClick={onSaveFamilyVersion}>
+          Save As Family Version
+        </button>
         {compareId ? (
           <button type="button" disabled={isLoading || compareIsPromoted} onClick={onPromoteCompared}>
             {compareIsPromoted ? "Compared Version Promoted" : "Promote Compared Version"}

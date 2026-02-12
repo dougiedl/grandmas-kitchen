@@ -50,6 +50,7 @@ const CUISINE_AUTH_TOKENS: Record<string, string[]> = {
   spanish: ["sofrito", "paprika", "saffron", "olive oil", "cocido", "paella"],
   french: ["shallot", "butter", "thyme", "ragout", "potage"],
   lebanese: ["lemon", "mint", "parsley", "chickpea", "lentil", "warm spices"],
+  persian: ["saffron", "turmeric", "dried lime", "pomegranate", "walnut", "tahdig"],
 };
 
 export function scoreRecipe({ prompt, recipe }: EvalInput): EvalScore {
@@ -120,7 +121,7 @@ export function scoreRecipe({ prompt, recipe }: EvalInput): EvalScore {
 
   if (cuisineText.length > 2) {
     const promptText = prompt.toLowerCase();
-    const cuisineMentions = ["italian", "mexican", "greek", "spanish", "french", "lebanese"].filter((cuisine) =>
+    const cuisineMentions = ["italian", "mexican", "greek", "spanish", "french", "lebanese", "persian"].filter((cuisine) =>
       promptText.includes(cuisine),
     );
     if (cuisineMentions.length > 0 && !promptText.includes(cuisineText)) {

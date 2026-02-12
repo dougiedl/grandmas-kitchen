@@ -6,6 +6,7 @@ import greekPack from "@/lib/knowledge/packs/greek.v1.json";
 import italianPack from "@/lib/knowledge/packs/italian.v1.json";
 import lebanesePack from "@/lib/knowledge/packs/lebanese.v1.json";
 import mexicanPack from "@/lib/knowledge/packs/mexican.v1.json";
+import persianPack from "@/lib/knowledge/packs/persian.v1.json";
 import spanishPack from "@/lib/knowledge/packs/spanish.v1.json";
 
 type KnowledgeSnippet = {
@@ -34,6 +35,7 @@ type KnowledgeInput = {
   prompt: string;
   regionalStyle?: string;
   regenerationStyle?: RegenerationStyle;
+  useSemanticRerank?: boolean;
 };
 
 export type KnowledgeContext = {
@@ -42,6 +44,7 @@ export type KnowledgeContext = {
   packId: string;
   packVersion: string;
   selectedSnippets: string[];
+  selectedSnippetIds: string[];
   pantryAnchors: string[];
   techniqueRules: string[];
   flavorPairings: string[];
@@ -57,6 +60,7 @@ const PACKS: CuisineKnowledgePack[] = [
   spanishPack as CuisineKnowledgePack,
   frenchPack as CuisineKnowledgePack,
   lebanesePack as CuisineKnowledgePack,
+  persianPack as CuisineKnowledgePack,
 ];
 
 const HOME_STYLE_PACK: CuisineKnowledgePack = {
@@ -81,6 +85,7 @@ function normalizeCuisine(cuisine: string): string {
   if (lower.includes("span")) return "Spanish";
   if (lower.includes("french")) return "French";
   if (lower.includes("leban")) return "Lebanese";
+  if (lower.includes("pers")) return "Persian";
   return "Home Style";
 }
 
@@ -255,14 +260,20 @@ export async function buildKnowledgeContext(input: KnowledgeInput): Promise<Know
     .sort((a, b) => b.lexicalScore - a.lexicalScore)
     .slice(0, Math.min(10, lexicalCandidates.length));
 
-  const reranked = await rerankByEmbedding(
-    [input.prompt, input.regionalStyle ? `Regional style: ${input.regionalStyle}` : "", `Cuisine: ${pack.cuisine}`]
-      .filter(Boolean)
-      .join("\n"),
-    shortlisted,
-  );
+  const reranked =
+    input.useSemanticRerank === false
+      ? shortlisted
+          .sort((a, b) => b.lexicalScore - a.lexicalScore)
+          .map((item) => item.snippet)
+      : await rerankByEmbedding(
+          [input.prompt, input.regionalStyle ? `Regional style: ${input.regionalStyle}` : "", `Cuisine: ${pack.cuisine}`]
+            .filter(Boolean)
+            .join("\n"),
+          shortlisted,
+        );
 
   const selectedSnippets = reranked.slice(0, 4).map((snippet) => snippet.text);
+  const selectedSnippetIds = reranked.slice(0, 4).map((snippet) => snippet.id);
 
   return {
     cuisine: pack.cuisine,
@@ -270,6 +281,7 @@ export async function buildKnowledgeContext(input: KnowledgeInput): Promise<Know
     packId: pack.id,
     packVersion: pack.version,
     selectedSnippets,
+    selectedSnippetIds,
     pantryAnchors: pack.pantryAnchors,
     techniqueRules: pack.techniqueRules,
     flavorPairings: pack.flavorPairings,

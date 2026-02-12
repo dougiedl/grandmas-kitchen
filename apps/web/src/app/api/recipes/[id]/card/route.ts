@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { getPool } from "@/lib/db/pool";
 
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -42,39 +51,106 @@ export async function GET(
   }
 
   const ingredients = (recipe.recipe_json?.ingredients ?? [])
-    .map((item) => `<li>${item.amount} ${item.item}</li>`)
+    .map((item) => `<li><strong>${escapeHtml(item.amount)}</strong> ${escapeHtml(item.item)}</li>`)
     .join("");
   const steps = (recipe.recipe_json?.steps ?? [])
-    .map((step, idx) => `<li>${idx + 1}. ${step}</li>`)
+    .map((step) => `<li>${escapeHtml(step)}</li>`)
     .join("");
   const tips = (recipe.recipe_json?.grandmaTips ?? [])
-    .map((tip) => `<li>${tip}</li>`)
+    .map((tip) => `<li>${escapeHtml(tip)}</li>`)
     .join("");
 
   const html = `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>${recipe.title}</title>
+    <title>${escapeHtml(recipe.title)}</title>
     <style>
-      body { font-family: Georgia, serif; margin: 32px; color: #3d2b21; }
-      .meta { color: #6a4a3a; margin-bottom: 16px; }
-      h1, h2 { margin-bottom: 6px; }
-      h2 { margin-top: 20px; }
-      ul, ol { padding-left: 20px; }
-      @media print { .print-hint { display: none; } }
+      body {
+        background: #f8f1e7;
+        color: #2e1f18;
+        font-family: "Palatino Linotype", Palatino, Georgia, serif;
+        margin: 0;
+        padding: 28px;
+      }
+      .card {
+        background: #fffaf2;
+        border: 1px solid #d4a774;
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(71, 41, 28, 0.12);
+        margin: 0 auto;
+        max-width: 820px;
+        padding: 20px 24px;
+      }
+      .brand {
+        color: #8c5635;
+        font-size: 12px;
+        letter-spacing: 1px;
+        margin: 0;
+        text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Garamond", "Times New Roman", serif;
+        font-size: 42px;
+        margin: 6px 0 8px;
+      }
+      .meta {
+        color: #654636;
+        margin-bottom: 20px;
+      }
+      .divider {
+        border: 0;
+        border-top: 1px solid #e6c8a3;
+        margin: 18px 0;
+      }
+      .section-title {
+        color: #5a3828;
+        font-family: "Garamond", "Times New Roman", serif;
+        font-size: 26px;
+        margin: 0 0 8px;
+      }
+      ul, ol {
+        line-height: 1.5;
+        margin: 0;
+        padding-left: 20px;
+      }
+      li { margin-bottom: 6px; }
+      .hint {
+        color: #8d6b57;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      @media print {
+        body {
+          background: #fff;
+          padding: 0;
+        }
+        .card {
+          border: 0;
+          box-shadow: none;
+          max-width: none;
+          padding: 0;
+        }
+        .hint { display: none; }
+      }
     </style>
   </head>
   <body>
-    <p class="print-hint">Use browser Print and select "Save as PDF".</p>
-    <h1>${recipe.title}</h1>
-    <p class="meta">${recipe.cuisine ?? "Home Style"} • ${recipe.servings ?? "-"} servings • ${recipe.total_minutes ?? "-"} min</p>
-    <h2>Ingredients</h2>
-    <ul>${ingredients}</ul>
-    <h2>Steps</h2>
-    <ol>${steps}</ol>
-    <h2>Grandma Tips</h2>
-    <ul>${tips}</ul>
+    <article class="card">
+      <p class="brand">Grandma's Kitchen</p>
+      <p class="hint">Print this card to keep a family copy in your recipe binder.</p>
+      <h1>${escapeHtml(recipe.title)}</h1>
+      <p class="meta">${escapeHtml(recipe.cuisine ?? "Home Style")} • ${escapeHtml(String(recipe.servings ?? "-"))} servings • ${escapeHtml(String(recipe.total_minutes ?? "-"))} min</p>
+      <hr class="divider" />
+      <h2 class="section-title">Ingredients</h2>
+      <ul>${ingredients}</ul>
+      <hr class="divider" />
+      <h2 class="section-title">Steps</h2>
+      <ol>${steps}</ol>
+      <hr class="divider" />
+      <h2 class="section-title">Grandma Tips</h2>
+      <ul>${tips}</ul>
+    </article>
   </body>
 </html>`;
 

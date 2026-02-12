@@ -70,14 +70,14 @@ export function RecipesListClient({ initialRecipes }: { initialRecipes: RecipeIt
   return (
     <section>
       <h2>Recipes</h2>
-      <p>Your saved grandma-inspired recipes.</p>
+      <p>Your saved grandma-inspired recipes and family versions.</p>
 
       <div className="recipes-toolbar">
         <input
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search by title or cuisine"
+          placeholder="Search by dish name or cuisine"
         />
         <label>
           <input
@@ -85,12 +85,12 @@ export function RecipesListClient({ initialRecipes }: { initialRecipes: RecipeIt
             checked={favoriteOnly}
             onChange={(event) => setFavoriteOnly(event.target.checked)}
           />
-          Favorites only
+          Show favorites only
         </label>
       </div>
 
       {error ? <p className="error-text">{error}</p> : null}
-      {filtered.length === 0 ? <p>No recipes match this filter.</p> : null}
+      {filtered.length === 0 ? <p>No recipes match this filter yet. Try another search or generate a new recipe in Chat.</p> : null}
 
       <div className="recipe-list-grid">
         {filtered.map((recipe) => (
@@ -120,7 +120,7 @@ export function RecipesListClient({ initialRecipes }: { initialRecipes: RecipeIt
               className={recipe.is_favorite ? "fav-btn fav-btn-on" : "fav-btn"}
               onClick={() => toggleFavorite(recipe.id, !recipe.is_favorite)}
             >
-              {recipe.is_favorite ? "Unfavorite" : "Favorite"}
+              {recipe.is_favorite ? "Remove Favorite" : "Save as Favorite"}
             </button>
           </article>
         ))}

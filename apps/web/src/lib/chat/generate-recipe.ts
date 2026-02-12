@@ -9,6 +9,21 @@ type GenerateRecipeInput = {
   regenerationStyle?: RegenerationStyle;
   regionalStyle?: string;
   preferenceNotes?: string[];
+  useSemanticRerank?: boolean;
+};
+
+export type RecipeGenerationMeta = {
+  modelName: string;
+  usedOpenAI: boolean;
+  knowledgePackId: string;
+  knowledgePackVersion: string;
+  knowledgeCuisine: string;
+  selectedSnippetIds: string[];
+};
+
+export type GenerateRecipeResult = {
+  recipe: Recipe;
+  meta: RecipeGenerationMeta;
 };
 
 function styleInstruction(style?: RegenerationStyle): string {
@@ -78,13 +93,14 @@ function applyFallbackStyle(recipe: Recipe, style?: RegenerationStyle): Recipe {
   };
 }
 
-export async function generateRecipe(input: GenerateRecipeInput): Promise<Recipe> {
+export async function generateRecipeDetailed(input: GenerateRecipeInput): Promise<GenerateRecipeResult> {
   const knowledgeContext = await buildKnowledgeContext({
     cuisine: input.cuisine,
     personaName: input.personaName,
     prompt: input.prompt,
     regionalStyle: input.regionalStyle,
     regenerationStyle: input.regenerationStyle,
+    useSemanticRerank: input.useSemanticRerank,
   });
 
   const knowledgePrompt = formatKnowledgeForPrompt(knowledgeContext);
@@ -102,8 +118,16 @@ export async function generateRecipe(input: GenerateRecipeInput): Promise<Recipe
   );
 
   const apiKey = process.env.OPENAI_API_KEY;
+  const fallbackMeta: RecipeGenerationMeta = {
+    modelName: "mock-fallback",
+    usedOpenAI: false,
+    knowledgePackId: knowledgeContext.packId,
+    knowledgePackVersion: knowledgeContext.packVersion,
+    knowledgeCuisine: knowledgeContext.cuisine,
+    selectedSnippetIds: knowledgeContext.selectedSnippetIds,
+  };
   if (!apiKey) {
-    return mockRecipe;
+    return { recipe: mockRecipe, meta: fallbackMeta };
   }
 
   try {
@@ -150,7 +174,7 @@ export async function generateRecipe(input: GenerateRecipeInput): Promise<Recipe
     });
 
     if (!response.ok) {
-      return mockRecipe;
+      return { recipe: mockRecipe, meta: fallbackMeta };
     }
 
     const data = (await response.json()) as {
@@ -159,12 +183,27 @@ export async function generateRecipe(input: GenerateRecipeInput): Promise<Recipe
 
     const raw = data.choices?.[0]?.message?.content;
     if (!raw) {
-      return mockRecipe;
+      return { recipe: mockRecipe, meta: fallbackMeta };
     }
 
-    return validateRecipe(JSON.parse(raw));
+    return {
+      recipe: validateRecipe(JSON.parse(raw)),
+      meta: {
+        modelName: model,
+        usedOpenAI: true,
+        knowledgePackId: knowledgeContext.packId,
+        knowledgePackVersion: knowledgeContext.packVersion,
+        knowledgeCuisine: knowledgeContext.cuisine,
+        selectedSnippetIds: knowledgeContext.selectedSnippetIds,
+      },
+    };
   } catch (error) {
     console.error("Recipe generation fallback", error);
-    return mockRecipe;
+    return { recipe: mockRecipe, meta: fallbackMeta };
   }
+}
+
+export async function generateRecipe(input: GenerateRecipeInput): Promise<Recipe> {
+  const result = await generateRecipeDetailed(input);
+  return result.recipe;
 }

@@ -33,6 +33,8 @@ const SIGNAL_RULES: SignalRule[] = [
   { key: "es_valencian", label: "Valencian", cuisine: "Spanish", confidence: 0.85, patterns: [/\bvalencian\b/i, /\bvalencia\b/i] },
   { key: "fr_provencal", label: "Provencal", cuisine: "French", confidence: 0.85, patterns: [/\bprovencal\b/i, /\bprovence\b/i] },
   { key: "lb_beirut", label: "Beirut-Style", cuisine: "Lebanese", confidence: 0.8, patterns: [/\bbeirut\b/i] },
+  { key: "ir_tehrani", label: "Tehrani", cuisine: "Persian", confidence: 0.75, patterns: [/\btehran\b/i, /\btehrani\b/i] },
+  { key: "ir_shirazi", label: "Shirazi", cuisine: "Persian", confidence: 0.8, patterns: [/\bshiraz\b/i, /\bshirazi\b/i] },
 ];
 
 function normalizeCuisine(cuisine: string): string {
@@ -43,6 +45,7 @@ function normalizeCuisine(cuisine: string): string {
   if (lower.includes("span")) return "Spanish";
   if (lower.includes("french")) return "French";
   if (lower.includes("leban")) return "Lebanese";
+  if (lower.includes("pers")) return "Persian";
   return cuisine;
 }
 

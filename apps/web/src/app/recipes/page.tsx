@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth/auth";
+import { CommunityTrendsClient } from "@/components/community-trends-client";
 import { RecipesListClient } from "@/components/recipes-list-client";
 import { getPool } from "@/lib/db/pool";
 
@@ -16,6 +17,12 @@ type RecipeRecord = {
   } | null;
 };
 
+type DiscoveryRow = {
+  cuisine: string;
+  title: string;
+  recipe_count: string;
+};
+
 export default async function RecipesPage() {
   const session = await auth();
   const email = session?.user?.email;
@@ -24,7 +31,7 @@ export default async function RecipesPage() {
     return (
       <section>
         <h2>Recipes</h2>
-        <p>Please sign in to see your saved recipes.</p>
+        <p>Sign in to view your saved recipes, family versions, and personal cooking history.</p>
       </section>
     );
   }
@@ -42,7 +49,24 @@ export default async function RecipesPage() {
     [email],
   );
 
+  const discoveryResult = await pool.query<DiscoveryRow>(
+    `
+      select
+        coalesce(cuisine, 'Home Style') as cuisine,
+        title,
+        count(*)::text as recipe_count
+      from recipes
+      where created_at > now() - interval '30 days'
+      group by coalesce(cuisine, 'Home Style'), title
+      order by count(*) desc, max(created_at) desc
+      limit 12
+    `,
+  );
+
   return (
-    <RecipesListClient initialRecipes={result.rows} />
+    <section className="kitchen-theme kitchen-theme-home">
+      <RecipesListClient initialRecipes={result.rows} />
+      <CommunityTrendsClient rows={discoveryResult.rows} />
+    </section>
   );
 }

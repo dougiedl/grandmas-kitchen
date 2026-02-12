@@ -55,6 +55,18 @@ function summarizeCompare(current: RecipeDetailRecord, compare?: VersionRow): st
   return changes.length ? changes.join(" • ") : "Minor wording or method differences";
 }
 
+function cuisineThemeClass(cuisine: string | null): string {
+  const text = (cuisine ?? "").toLowerCase();
+  if (text.includes("ital")) return "kitchen-theme-italian";
+  if (text.includes("mex")) return "kitchen-theme-mexican";
+  if (text.includes("greek")) return "kitchen-theme-greek";
+  if (text.includes("span")) return "kitchen-theme-spanish";
+  if (text.includes("french")) return "kitchen-theme-french";
+  if (text.includes("leban")) return "kitchen-theme-lebanese";
+  if (text.includes("pers")) return "kitchen-theme-persian";
+  return "kitchen-theme-home";
+}
+
 export default async function RecipeDetailPage({
   params,
   searchParams,
@@ -132,20 +144,22 @@ export default async function RecipeDetailPage({
     }));
 
   return (
-    <section className="recipe-detail">
-      <p>
-        <Link href="/recipes">Back to Recipes</Link>
-      </p>
-      <h2>{recipe.title}</h2>
-      <p>
-        {recipe.cuisine ?? "Home Style"} • {recipe.servings ?? "-"} servings • {recipe.total_minutes ?? "-"} min
-      </p>
-      <p>
-        {recipe.is_promoted ? "Promoted" : ""}
-        {recipe.is_promoted && recipe.is_favorite ? " • " : ""}
-        {recipe.is_favorite ? "Favorite recipe" : "Not marked favorite"}
-      </p>
-      <p className="recipe-list-date">Saved {new Date(recipe.created_at).toLocaleString()}</p>
+    <section className={`recipe-detail kitchen-theme ${cuisineThemeClass(recipe.cuisine)}`}>
+      <div className="recipe-hero">
+        <p>
+          <Link href="/recipes">Back to Recipes</Link>
+        </p>
+        <h2>{recipe.title}</h2>
+        <p>
+          {recipe.cuisine ?? "Home Style"} • {recipe.servings ?? "-"} servings • {recipe.total_minutes ?? "-"} min
+        </p>
+        <p>
+          {recipe.is_promoted ? "Promoted" : ""}
+          {recipe.is_promoted && recipe.is_favorite ? " • " : ""}
+          {recipe.is_favorite ? "Favorite recipe" : "Not marked favorite"}
+        </p>
+        <p className="recipe-list-date">Saved {new Date(recipe.created_at).toLocaleString()}</p>
+      </div>
 
       <RecipeDetailActions
         recipeId={recipe.id}
@@ -163,26 +177,34 @@ export default async function RecipeDetailPage({
         }}
       />
 
-      <h3>Ingredients</h3>
-      <ul>
-        {ingredients.map((ingredient) => (
-          <li key={`${ingredient.amount}-${ingredient.item}`}>{ingredient.amount} {ingredient.item}</li>
-        ))}
-      </ul>
+      <div className="recipe-reading-grid">
+        <article className="recipe-reading-card">
+          <h3>Ingredients</h3>
+          <ul>
+            {ingredients.map((ingredient) => (
+              <li key={`${ingredient.amount}-${ingredient.item}`}>{ingredient.amount} {ingredient.item}</li>
+            ))}
+          </ul>
+        </article>
 
-      <h3>Steps</h3>
-      <ol>
-        {steps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ol>
+        <article className="recipe-reading-card">
+          <h3>Steps</h3>
+          <ol>
+            {steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </article>
 
-      <h3>Grandma Tips</h3>
-      <ul>
-        {tips.map((tip) => (
-          <li key={tip}>{tip}</li>
-        ))}
-      </ul>
+        <article className="recipe-reading-card">
+          <h3>Grandma Tips</h3>
+          <ul>
+            {tips.map((tip) => (
+              <li key={tip}>{tip}</li>
+            ))}
+          </ul>
+        </article>
+      </div>
 
       <h3>Version Compare</h3>
       <p>{summarizeCompare(recipe, compareRecipe)}</p>

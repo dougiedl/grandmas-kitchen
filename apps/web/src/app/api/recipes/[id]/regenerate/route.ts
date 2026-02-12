@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
-import { generateRecipe } from "@/lib/chat/generate-recipe";
+import { generateRecipeDetailed } from "@/lib/chat/generate-recipe";
 import { parseRegenerationStyle, type RegenerationStyle } from "@/lib/chat/recipe-schema";
 import { getPool } from "@/lib/db/pool";
 import {
@@ -10,6 +10,7 @@ import {
   persistSignals,
   upsertTasteProfile,
 } from "@/lib/personalization/profile";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 type RegeneratePayload = {
   regenerationStyle?: RegenerationStyle;
@@ -60,6 +61,17 @@ export async function POST(
     return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
   }
 
+  const limiter = checkRateLimit({
+    request,
+    userKey: source.user_id,
+    routeKey: "recipe_regenerate",
+    max: 20,
+    windowMs: 60_000,
+  });
+  if (!limiter.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded. Please wait and try again." }, { status: 429 });
+  }
+
   const baseIngredients = (source.recipe_json?.ingredients ?? [])
     .slice(0, 8)
     .map((item) => `${item.amount} ${item.item}`)
@@ -91,7 +103,7 @@ export async function POST(
     signals: promptSignals,
   });
 
-  const recipe = await generateRecipe({
+  const generation = await generateRecipeDetailed({
     personaName: "Grandma",
     cuisine,
     prompt,
@@ -99,6 +111,7 @@ export async function POST(
     regionalStyle: personalizationContext.regionalStyle,
     preferenceNotes: personalizationContext.preferenceNotes,
   });
+  const recipe = generation.recipe;
 
   const newRecipeId = randomUUID();
   await pool.query(
@@ -138,6 +151,7 @@ export async function POST(
         sourceRecipeId: source.id,
         newRecipeId,
         regenerationStyle: regenerationStyle ?? null,
+        generationMeta: generation.meta,
       }),
     ],
   );

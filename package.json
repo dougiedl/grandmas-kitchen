@@ -13,6 +13,7 @@
     "lint": "npm run lint --workspace @gk/web",
     "typecheck": "npm run typecheck --workspace @gk/web",
     "test": "npm run test --workspace @gk/web",
+    "qa:smoke": "./scripts/smoke-api.sh",
     "db:migrate": "./scripts/db-migrate.sh",
     "db:seed": "./scripts/db-seed.sh"
   }

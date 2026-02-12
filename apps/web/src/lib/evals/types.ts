@@ -48,7 +48,7 @@ export type EvalRunSummary = {
     finishedAt: string | null;
   };
   gate: {
-    status: "pass" | "fail";
+    status: "pass" | "fail" | "pending";
     reasons: string[];
   };
   cuisineBreakdown: Array<{
@@ -56,6 +56,10 @@ export type EvalRunSummary = {
     avgScore: number;
     weakAuthenticityCount: number;
     totalCases: number;
+  }>;
+  diagnostics: Array<{
+    error: string;
+    count: number;
   }>;
   topCases: Array<{
     slug: string;

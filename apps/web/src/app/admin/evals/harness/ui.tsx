@@ -126,7 +126,13 @@ export function EvalHarnessClient() {
               Started {formatDateTime(summary.run.startedAt)} | Finished {formatDateTime(summary.run.finishedAt)}
             </p>
             <p>
-              Release gate: <strong className={summary.gate.status === "pass" ? "readiness-pass" : "readiness-fail"}>
+              Release gate: <strong className={
+                summary.gate.status === "pass"
+                  ? "readiness-pass"
+                  : summary.gate.status === "pending"
+                    ? "readiness-warn"
+                    : "readiness-fail"
+              }>
                 {summary.gate.status.toUpperCase()}
               </strong>
             </p>
@@ -152,6 +158,17 @@ export function EvalHarnessClient() {
                 <li key={item.cuisine}>
                   {item.cuisine}: avg {item.avgScore.toFixed(2)}, weak authenticity {item.weakAuthenticityCount}/
                   {item.totalCases}
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="admin-card">
+            <h3>Run Diagnostics</h3>
+            {summary.diagnostics.length === 0 ? <p>No generation errors in this run.</p> : null}
+            <ul>
+              {summary.diagnostics.map((item) => (
+                <li key={item.error}>
+                  {item.error}: {item.count}
                 </li>
               ))}
             </ul>

@@ -1,6 +1,6 @@
 export type BaselineCase = {
   slug: string;
-  cuisine: "Italian" | "Mexican" | "Greek" | "Spanish";
+  cuisine: "Italian" | "Mexican" | "Greek" | "Spanish" | "French" | "Lebanese" | "Persian";
   personaName: string;
   prompt: string;
   tags: string[];
@@ -97,5 +97,26 @@ export const BASELINE_CASES: BaselineCase[] = [
     personaName: "Nonna Rosa",
     prompt: "Italian-American from New York style red-sauce comfort with meatballs and Sunday table energy.",
     tags: ["regional-italian-american", "comfort", "sunday"],
+  },
+  {
+    slug: "fr-rustic-chicken",
+    cuisine: "French",
+    personaName: "Mamie Colette",
+    prompt: "Rustic French-style chicken and vegetables for a cozy Sunday dinner.",
+    tags: ["french", "comfort", "sunday"],
+  },
+  {
+    slug: "lb-lentil-comfort",
+    cuisine: "Lebanese",
+    personaName: "Teta Miriam",
+    prompt: "Lebanese comfort meal with lentils, lemon, garlic, and herbs.",
+    tags: ["lebanese", "comfort", "lentils"],
+  },
+  {
+    slug: "ir-saffron-rice",
+    cuisine: "Persian",
+    personaName: "Maman Parisa",
+    prompt: "Persian-inspired saffron rice dinner with chicken and herbs, family style.",
+    tags: ["persian", "saffron", "family-style"],
   },
 ];

@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     return (
       <section>
         <h2>Profile</h2>
-        <p>Please sign in to view your cooking profile.</p>
+        <p>Sign in to unlock your personalized taste profile and returning grandma experience.</p>
       </section>
     );
   }
@@ -40,7 +40,7 @@ export default async function ProfilePage() {
     return (
       <section>
         <h2>Profile</h2>
-        <p>No profile data yet. Start a chat to begin building your grandma taste memory.</p>
+        <p>No profile data yet. Start your first chat so we can learn your family style and preferences.</p>
       </section>
     );
   }
@@ -77,7 +77,7 @@ export default async function ProfilePage() {
   return (
     <section>
       <h2>Profile</h2>
-      <p>Your returning experience adapts based on your recipe history and regional cooking cues.</p>
+      <p>Your experience improves over time based on your recipe history and regional cues.</p>
 
       <div className="admin-grid">
         <article className="admin-card">
@@ -91,7 +91,7 @@ export default async function ProfilePage() {
               <p>Updated: {new Date(taste.updated_at).toLocaleString()}</p>
             </>
           ) : (
-            <p>No taste memory yet. Start generating recipes.</p>
+            <p>No taste memory yet. Start generating recipes to build your profile.</p>
           )}
         </article>
 

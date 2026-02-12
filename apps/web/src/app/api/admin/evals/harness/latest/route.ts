@@ -72,6 +72,7 @@ export async function GET() {
   );
 
   const rows = resultRows.rows;
+  const isInProgress = run.finished_at === null || run.completed_cases < run.total_cases;
   const avg = run.avg_total_score ? toNumber(run.avg_total_score) : 0;
   const worstScore = rows.length > 0 ? Math.min(...rows.map((row) => toNumber(row.total_score))) : 0;
   const weakAuthenticityCount = rows.filter((row) => (row.notes ?? "").includes("authenticity_weak")).length;
@@ -95,15 +96,30 @@ export async function GET() {
     totalCases: value.total,
   }));
 
+  const diagnosticsMap = new Map<string, number>();
+  for (const row of rows) {
+    const notes = row.notes ?? "";
+    if (notes.startsWith("generation_error:")) {
+      diagnosticsMap.set(notes, (diagnosticsMap.get(notes) ?? 0) + 1);
+    }
+  }
+  const diagnostics = [...diagnosticsMap.entries()]
+    .map(([error, count]) => ({ error, count }))
+    .sort((a, b) => b.count - a.count);
+
   const gateReasons: string[] = [];
-  if (avg < 82) {
-    gateReasons.push(`Average score below threshold (got ${avg.toFixed(2)}, need >= 82.00).`);
-  }
-  if (worstScore < 68) {
-    gateReasons.push(`Worst-case score below floor (got ${worstScore.toFixed(2)}, need >= 68.00).`);
-  }
-  if (weakAuthRate > 0.2) {
-    gateReasons.push(`Authenticity weak rate too high (${(weakAuthRate * 100).toFixed(1)}%, need <= 20%).`);
+  if (isInProgress) {
+    gateReasons.push(`Run in progress (${run.completed_cases}/${run.total_cases} complete).`);
+  } else {
+    if (avg < 82) {
+      gateReasons.push(`Average score below threshold (got ${avg.toFixed(2)}, need >= 82.00).`);
+    }
+    if (worstScore < 68) {
+      gateReasons.push(`Worst-case score below floor (got ${worstScore.toFixed(2)}, need >= 68.00).`);
+    }
+    if (weakAuthRate > 0.2) {
+      gateReasons.push(`Authenticity weak rate too high (${(weakAuthRate * 100).toFixed(1)}%, need <= 20%).`);
+    }
   }
 
   const summary: EvalRunSummary = {
@@ -117,10 +133,11 @@ export async function GET() {
       finishedAt: run.finished_at,
     },
     gate: {
-      status: gateReasons.length === 0 ? "pass" : "fail",
+      status: isInProgress ? "pending" : gateReasons.length === 0 ? "pass" : "fail",
       reasons: gateReasons,
     },
     cuisineBreakdown,
+    diagnostics,
     topCases: rows.slice(0, 5).map((row) => ({
       slug: row.slug,
       cuisine: row.cuisine,

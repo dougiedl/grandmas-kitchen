@@ -152,6 +152,25 @@ const CUISINE_MEMORY: Record<string, CuisineMemory> = {
       skillet: ["Skillet Kifta-Inspired Supper", "Warm Spice Family Pan", "Teta Night Skillet"],
     },
   },
+  persian: {
+    displayName: "Persian",
+    fat: "ghee or neutral oil",
+    acid: "lemon juice or mild verjuice-style acid",
+    herbs: "parsley, cilantro, and dried fenugreek-style herbs",
+    aromatics: "onion, garlic, and turmeric",
+    pantryBase: "tomato paste, saffron water, and stock",
+    finish: "saffron, herbs, and optional barberries",
+    technique: "brown onions patiently and bloom turmeric before adding liquids",
+    familyLine: "rice-and-stew table comfort with sweet-sour balance",
+    signatureTitles: {
+      pasta: ["Persian Pantry Noodles", "Saffron Herb Family Pasta", "Maman Weeknight Noodles"],
+      soup: ["Aromatic Lentil Soup", "Herb and Bean Persian Soup", "Maman Comfort Broth"],
+      stew: ["Ghormeh-Inspired Family Stew", "Walnut Pomegranate Pot", "Maman Sunday Stew"],
+      rice: ["Saffron Family Rice Pot", "Tahdig-Inspired Rice Supper", "Herb Rice and Beans"],
+      sheetPan: ["Saffron Chicken Tray", "Roasted Vegetable Persian Pan", "Maman Sheet-Pan Supper"],
+      skillet: ["Turmeric Onion Family Skillet", "Saffron Tomato Pan", "Maman Night Skillet"],
+    },
+  },
   default: {
     displayName: "Home Style",
     fat: "olive oil",
@@ -320,6 +339,7 @@ function normalizeCuisineKey(cuisine: string): string {
   if (key.includes("span")) return "spanish";
   if (key.includes("french")) return "french";
   if (key.includes("leban")) return "lebanese";
+  if (key.includes("pers")) return "persian";
   return key;
 }
 

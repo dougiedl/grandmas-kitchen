@@ -72,6 +72,7 @@ export function ChatClient({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const startThreadInFlightRef = useRef(false);
+  const chatWindowRef = useRef<HTMLDivElement | null>(null);
   const [suggestedFix, setSuggestedFix] = useState<SuggestedFix | null>(null);
 
   async function trackEvent(eventName: string, eventProps?: Record<string, unknown>) {
@@ -98,7 +99,7 @@ export function ChatClient({
   async function refreshThreads() {
     const response = await fetch("/api/chat/threads", { cache: "no-store" });
     if (!response.ok) {
-      throw new Error("Unable to load recent conversations");
+      throw new Error("Unable to load recent kitchen conversations");
     }
 
     const data = (await response.json()) as { threads: ThreadSummary[] };
@@ -109,13 +110,39 @@ export function ChatClient({
     () => LAUNCH_PERSONAS.find((item) => item.id === activePersonaId),
     [activePersonaId],
   );
+  const kitchenThemeClass = useMemo(() => {
+    const cuisine = persona?.cuisine.toLowerCase();
+    if (!cuisine) return "kitchen-theme-home";
+    if (cuisine.includes("ital")) return "kitchen-theme-italian";
+    if (cuisine.includes("mex")) return "kitchen-theme-mexican";
+    if (cuisine.includes("greek")) return "kitchen-theme-greek";
+    if (cuisine.includes("span")) return "kitchen-theme-spanish";
+    if (cuisine.includes("french")) return "kitchen-theme-french";
+    if (cuisine.includes("leban")) return "kitchen-theme-lebanese";
+    if (cuisine.includes("pers")) return "kitchen-theme-persian";
+    return "kitchen-theme-home";
+  }, [persona]);
+  const starterPrompts = useMemo(() => {
+    if (!persona) {
+      return [
+        "I have chicken, onion, garlic, and tomatoes. What should I cook?",
+        "I need a quick weeknight comfort meal for 4.",
+      ];
+    }
+
+    return [
+      `My grandma is ${persona.cuisine.toLowerCase()} and I want something nostalgic for Sunday dinner.`,
+      `Use ${persona.signatures[0]} inspiration but with what I have in my fridge.`,
+      `Make a weeknight version of a ${persona.cuisine.toLowerCase()} family comfort dish.`,
+    ];
+  }, [persona]);
 
   useEffect(() => {
     async function fetchThreads() {
       try {
         await refreshThreads();
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "Unable to load conversations");
+        setError(cause instanceof Error ? cause.message : "Unable to load your conversations");
       }
     }
 
@@ -152,7 +179,7 @@ export function ChatClient({
         });
         await refreshThreads();
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "Unable to start chat");
+        setError(cause instanceof Error ? cause.message : "Unable to start your conversation");
       } finally {
         startThreadInFlightRef.current = false;
         setIsLoading(false);
@@ -184,12 +211,20 @@ export function ChatClient({
           router.replace(`/chat?thread=${threadId}`);
         }
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "Unable to load messages");
+        setError(cause instanceof Error ? cause.message : "Unable to load this conversation");
       }
     }
 
     void fetchThread();
   }, [router, threadId]);
+
+  useEffect(() => {
+    const node = chatWindowRef.current;
+    if (!node) {
+      return;
+    }
+    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+  }, [messages, isLoading]);
 
   async function sendMessage(payload: SendMessagePayload) {
     if (!threadId) {
@@ -207,7 +242,7 @@ export function ChatClient({
       });
 
       if (!response.ok) {
-        throw new Error(await toApiError(response, "Unable to send message"));
+      throw new Error(await toApiError(response, "Unable to send message"));
       }
 
       const data = (await response.json()) as {
@@ -229,17 +264,103 @@ export function ChatClient({
       });
       await refreshThreads();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to send message");
+      setError(cause instanceof Error ? cause.message : "Unable to send your message");
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function inferPersonaIdFromInput(content: string): string {
+    const text = content.toLowerCase();
+
+    if (text.includes("sicilian") || text.includes("neapolitan") || text.includes("italian-american") || text.includes("nonna") || text.includes("italian")) {
+      return "nonna-rosa";
+    }
+    if (text.includes("oaxacan") || text.includes("mexican") || text.includes("abuelita") || text.includes("mole")) {
+      return "abuelita-carmen";
+    }
+    if (text.includes("greek") || text.includes("yiayia") || text.includes("moussaka")) {
+      return "yiayia-eleni";
+    }
+    if (text.includes("spanish") || text.includes("paella") || text.includes("abuela")) {
+      return "abuela-lucia";
+    }
+    if (text.includes("french") || text.includes("provencal") || text.includes("coq")) {
+      return "mamie-colette";
+    }
+    if (text.includes("lebanese") || text.includes("teta") || text.includes("mujadara")) {
+      return "teta-miriam";
+    }
+    if (text.includes("persian") || text.includes("tahdig") || text.includes("ghormeh") || text.includes("fesenjan")) {
+      return "maman-parisa";
+    }
+
+    return threads.find((thread) => thread.persona_id)?.persona_id ?? "nonna-rosa";
   }
 
   async function onSendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const content = input.trim();
-    if (!threadId || !content) {
+    if (!content) {
+      return;
+    }
+
+    if (!threadId) {
+      const personaId = activePersonaId ?? inferPersonaIdFromInput(content);
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/chat/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ personaId }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await toApiError(response, "Unable to start chat thread"));
+        }
+
+        const data = (await response.json()) as { threadId: string };
+        setThreadId(data.threadId);
+        setActivePersonaId(personaId);
+        router.replace(`/chat?persona=${personaId}&thread=${data.threadId}`);
+        await refreshThreads();
+
+        const messageResponse = await fetch(`/api/chat/${data.threadId}/message`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+
+        if (!messageResponse.ok) {
+          throw new Error(await toApiError(messageResponse, "Unable to send message"));
+        }
+
+        const messageData = (await messageResponse.json()) as {
+          userMessage: Message | null;
+          assistantMessage: Message;
+          recipeId?: string;
+        };
+
+        setMessages((current) =>
+          messageData.userMessage
+            ? [...current, messageData.userMessage, messageData.assistantMessage]
+            : [...current, messageData.assistantMessage],
+        );
+        setInput("");
+        setSuggestedFix(null);
+        await trackEvent("chat_thread_auto_inferred_and_started", {
+          personaId,
+          threadId: data.threadId,
+        });
+        await refreshThreads();
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to start your chat");
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
 
@@ -252,6 +373,16 @@ export function ChatClient({
     }
 
     await sendMessage({ regenerationStyle: style, regenerateFromLatest: true });
+  }
+
+  function onUseStarterPrompt(prompt: string) {
+    setInput(prompt);
+    void trackEvent("chat_starter_prompt_clicked", {
+      prompt,
+      personaId: activePersonaId ?? null,
+      source: "chat_starter_chip",
+      copyVersion: "ux-conversion-v1",
+    });
   }
 
   function onResumeThread(thread: ThreadSummary) {
@@ -375,10 +506,10 @@ export function ChatClient({
   }
 
   return (
-    <section className="chat-layout">
+    <section className={`chat-layout kitchen-theme ${kitchenThemeClass}`}>
       <aside className="chat-sidebar">
         <h3>Recent Conversations</h3>
-        {threads.length === 0 ? <p>No saved chats yet.</p> : null}
+        {threads.length === 0 ? <p>No conversations yet. Start by sharing what you have in your kitchen.</p> : null}
         <div className="thread-list">
           {threads.map((thread) => {
             const isActive = thread.id === threadId;
@@ -399,36 +530,70 @@ export function ChatClient({
       </aside>
 
       <div>
-        <h2>Chat</h2>
-        {!activePersonaId ? <p>Select a grandma style from Home to begin cooking.</p> : null}
+        <h2>Cook With Grandma</h2>
+        {!activePersonaId ? <p>Describe your background and ingredients. We&apos;ll choose the best grandma style automatically.</p> : null}
         {persona ? (
-          <p>
-            Cooking with {persona.name} ({persona.cuisine})
-          </p>
+          <div className="chat-hero">
+            <p>
+              Cooking with {persona.name} ({persona.cuisine})
+            </p>
+            <div className="chip-row">
+              {persona.signatures.map((signature) => (
+                <span className="chip" key={signature}>
+                  {signature}
+                </span>
+              ))}
+            </div>
+          </div>
         ) : null}
         {error ? <p className="error-text">{error}</p> : null}
 
-        <div className="chat-window">
+        <div className="chat-window" ref={chatWindowRef}>
           {messages.map((message) => (
             <article key={message.id} className={message.role === "user" ? "msg msg-user" : "msg"}>
               <strong>{message.role === "user" ? "You" : "Grandma"}</strong>
               <p>{message.content}</p>
             </article>
           ))}
+          {isLoading ? (
+            <article className="msg msg-loading">
+              <strong>Grandma</strong>
+              <p className="typing-dots" aria-label="Grandma is typing">
+                <span />
+                <span />
+                <span />
+              </p>
+            </article>
+          ) : null}
         </div>
 
         <form onSubmit={onSendMessage} className="chat-form">
-          <input
-            type="text"
+          <textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="I have chicken, tomatoes, onions, and garlic..."
-            disabled={!threadId || isLoading}
+            placeholder="Share ingredients, cravings, regional clues, and family context. The more detail, the better grandma can personalize your recipe."
+            disabled={isLoading}
+            rows={4}
+            className="chat-textarea"
           />
-          <button type="submit" disabled={!threadId || isLoading || !input.trim()}>
-            Send
+          <button type="submit" disabled={isLoading || !input.trim()}>
+            {isLoading ? "Cooking..." : "Get Recipe"}
           </button>
         </form>
+
+        <div className="starter-row">
+          {starterPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              className="starter-chip"
+              onClick={() => onUseStarterPrompt(prompt)}
+              disabled={isLoading}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
 
         {latestRecipe ? (
           <section className="recipe-card">

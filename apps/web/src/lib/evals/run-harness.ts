@@ -48,46 +48,99 @@ export async function runEvalHarness(startedByUserId?: string): Promise<EvalRunS
   );
 
   const scores: number[] = [];
+  let completedCases = 0;
 
   for (const evalCase of cases) {
-    const recipe = await generateRecipe({
-      personaName: evalCase.persona_name,
-      cuisine: evalCase.cuisine,
-      prompt: evalCase.prompt,
-    });
+    try {
+      const recipe = await generateRecipe({
+        personaName: evalCase.persona_name,
+        cuisine: evalCase.cuisine,
+        prompt: evalCase.prompt,
+        useSemanticRerank: false,
+      });
 
-    const score = scoreRecipe({ prompt: evalCase.prompt, recipe });
-    scores.push(score.totalScore);
+      const score = scoreRecipe({ prompt: evalCase.prompt, recipe });
+      scores.push(score.totalScore);
 
-    await pool.query(
-      `
-        insert into eval_results (
-          id,
-          run_id,
-          case_id,
-          total_score,
-          realism_score,
-          structure_score,
-          grandma_score,
-          speed_alignment_score,
-          notes,
-          output_recipe_json
-        )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
-      `,
-      [
-        randomUUID(),
-        runId,
-        evalCase.id,
-        score.totalScore,
-        score.realismScore,
-        score.structureScore,
-        score.grandmaScore,
-        score.speedAlignmentScore,
-        score.notes || null,
-        JSON.stringify(recipe),
-      ],
-    );
+      await pool.query(
+        `
+          insert into eval_results (
+            id,
+            run_id,
+            case_id,
+            total_score,
+            realism_score,
+            structure_score,
+            grandma_score,
+            speed_alignment_score,
+            notes,
+            output_recipe_json
+          )
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
+        `,
+        [
+          randomUUID(),
+          runId,
+          evalCase.id,
+          score.totalScore,
+          score.realismScore,
+          score.structureScore,
+          score.grandmaScore,
+          score.speedAlignmentScore,
+          score.notes || null,
+          JSON.stringify(recipe),
+        ],
+      );
+    } catch (error) {
+      const fallbackRecipe = {
+        title: `${evalCase.cuisine} Eval Fallback`,
+        cuisine: evalCase.cuisine,
+        servings: 4,
+        totalMinutes: 45,
+        ingredients: [
+          { amount: "2 tbsp", item: "olive oil" },
+          { amount: "1 cup", item: "onion and garlic" },
+          { amount: "1.5 cups", item: "tomato or stock base" },
+        ],
+        steps: [
+          "Cook aromatics gently.",
+          "Simmer with base until cohesive.",
+        ],
+        grandmaTips: ["Taste and adjust seasoning before serving."],
+      };
+
+      await pool.query(
+        `
+          insert into eval_results (
+            id,
+            run_id,
+            case_id,
+            total_score,
+            realism_score,
+            structure_score,
+            grandma_score,
+            speed_alignment_score,
+            notes,
+            output_recipe_json
+          )
+          values ($1, $2, $3, 0, 0, 0, 0, 0, $4, $5::jsonb)
+        `,
+        [
+          randomUUID(),
+          runId,
+          evalCase.id,
+          `generation_error: ${error instanceof Error ? error.message : "unknown_error"}`,
+          JSON.stringify(fallbackRecipe),
+        ],
+      );
+      scores.push(0);
+    } finally {
+      completedCases += 1;
+      await pool.query(
+        `update eval_runs set completed_cases = $2 where id = $1`,
+        [runId, completedCases],
+      );
+    }
   }
 
   const avgScore =
@@ -103,7 +156,7 @@ export async function runEvalHarness(startedByUserId?: string): Promise<EvalRunS
           finished_at = now()
       where id = $1
     `,
-    [runId, cases.length, avgScore],
+    [runId, completedCases, avgScore],
   );
 
   const resultRows = await pool.query<EvalResultRow>(
@@ -157,6 +210,17 @@ export async function runEvalHarness(startedByUserId?: string): Promise<EvalRunS
     totalCases: value.total,
   }));
 
+  const diagnosticsMap = new Map<string, number>();
+  for (const row of rows) {
+    const notes = row.notes ?? "";
+    if (notes.startsWith("generation_error:")) {
+      diagnosticsMap.set(notes, (diagnosticsMap.get(notes) ?? 0) + 1);
+    }
+  }
+  const diagnostics = [...diagnosticsMap.entries()]
+    .map(([error, count]) => ({ error, count }))
+    .sort((a, b) => b.count - a.count);
+
   const gateReasons: string[] = [];
   if (avg < 82) {
     gateReasons.push(`Average score below threshold (got ${avg.toFixed(2)}, need >= 82.00).`);
@@ -192,7 +256,7 @@ export async function runEvalHarness(startedByUserId?: string): Promise<EvalRunS
       id: runId,
       modelName,
       totalCases: cases.length,
-      completedCases: cases.length,
+      completedCases,
       avgTotalScore: avgScore,
       startedAt: new Date().toISOString(),
       finishedAt: new Date().toISOString(),
@@ -202,6 +266,7 @@ export async function runEvalHarness(startedByUserId?: string): Promise<EvalRunS
       reasons: gateReasons,
     },
     cuisineBreakdown,
+    diagnostics,
     topCases,
     bottomCases,
   };

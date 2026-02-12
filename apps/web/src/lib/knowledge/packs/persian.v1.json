@@ -1,0 +1,21 @@
+{
+  "id": "persian-v1",
+  "version": "2026-02-12",
+  "cuisine": "Persian",
+  "personas": ["Maman Parisa"],
+  "pantryAnchors": ["saffron", "turmeric", "onion", "garlic", "tomato paste", "dried lime", "walnuts", "pomegranate molasses", "rice", "fresh herbs"],
+  "techniqueRules": [
+    "Bloom turmeric and onion base slowly for depth.",
+    "Use saffron water near finish for aroma.",
+    "Balance sweet-sour with pomegranate or citrus when needed."
+  ],
+  "flavorPairings": ["saffron + rice", "walnut + pomegranate", "herbs + dried lime", "turmeric + onion"],
+  "signatureDishes": ["ghormeh sabzi", "fesenjan", "adas polo", "zereshk polo", "tahdig"],
+  "substitutions": ["No dried lime -> lemon zest + mild vinegar", "No pomegranate molasses -> reduced cranberry + splash vinegar", "No saffron -> turmeric + pinch paprika"],
+  "donts": ["Do not over-spice with chili heat", "Do not skip balance between sour and richness", "Do not rush onion base"],
+  "snippets": [
+    { "id": "ir-comfort", "tags": ["comfort", "sunday"], "text": "Persian comfort should be aromatic, balanced, and built around shared rice-and-stew service." },
+    { "id": "ir-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Persian profile can simplify steps but should keep saffron aroma and onion depth." },
+    { "id": "ir-herb", "tags": ["herb", "traditional"], "text": "Traditional herb-forward profile should layer parsley, cilantro, and fenugreek-like warmth." }
+  ]
+}

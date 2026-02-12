@@ -27,7 +27,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body>
         <header className="site-header">
-          <h1>Grandma&apos;s Kitchen</h1>
+          <h1>
+            <span className="kitchen-mark" aria-hidden>
+              🍲
+            </span>
+            Grandma&apos;s Kitchen
+          </h1>
           <TopNav showAdmin={showAdmin} />
           <div className="auth-row">
             {session?.user?.email ? (

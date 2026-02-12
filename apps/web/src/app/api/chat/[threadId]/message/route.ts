@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
-import { generateRecipe } from "@/lib/chat/generate-recipe";
+import { generateRecipeDetailed } from "@/lib/chat/generate-recipe";
 import {
   parseRegenerationStyle,
   type RegenerationStyle,
@@ -13,6 +13,7 @@ import {
   persistSignals,
   upsertTasteProfile,
 } from "@/lib/personalization/profile";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 type MessagePayload = {
   content?: string;
@@ -53,6 +54,17 @@ export async function POST(
 
   if (!thread) {
     return NextResponse.json({ error: "Thread not found" }, { status: 404 });
+  }
+
+  const limiter = checkRateLimit({
+    request,
+    userKey: thread.user_id as string,
+    routeKey: "chat_message",
+    max: 40,
+    windowMs: 60_000,
+  });
+  if (!limiter.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded. Please wait and try again." }, { status: 429 });
   }
 
   let basePrompt = body.content?.trim();
@@ -107,7 +119,7 @@ export async function POST(
     );
   }
 
-  const recipe = await generateRecipe({
+  const generation = await generateRecipeDetailed({
     personaName: thread.persona_name ?? "Grandma",
     cuisine,
     prompt: generationPrompt,
@@ -115,6 +127,7 @@ export async function POST(
     regionalStyle: personalizationContext.regionalStyle,
     preferenceNotes: personalizationContext.preferenceNotes,
   });
+  const recipe = generation.recipe;
 
   const styleText =
     regenerationStyle === "faster"
@@ -172,7 +185,12 @@ export async function POST(
     [
       randomUUID(),
       thread.user_id,
-      JSON.stringify({ threadId, recipeId, regenerationStyle: regenerationStyle ?? null }),
+      JSON.stringify({
+        threadId,
+        recipeId,
+        regenerationStyle: regenerationStyle ?? null,
+        generationMeta: generation.meta,
+      }),
     ],
   );
 

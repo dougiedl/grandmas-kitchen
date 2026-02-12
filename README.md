@@ -11,6 +11,7 @@ Sprint 1 establishes foundation and delivery infrastructure for a fast beta buil
 - Timeline: 12-week plan with accelerated 8-10 week feature-complete target.
 - Auth: Google OAuth only (MVP).
 - Launch cuisines: Italian, Mexican, Greek, Spanish.
+- Expansion set (enabled): French, Lebanese, Persian.
 - Beta size: 50-100 users.
 - Positioning: Grandma-inspired, comfort and cultural continuity.
 
@@ -59,6 +60,9 @@ npm run db:seed
 
 # 6) Start app
 npm run dev
+
+# 7) Optional API smoke checks (run in separate terminal while app is running)
+npm run qa:smoke
 ```
 
 ## Sprint 1 Exit Criteria
