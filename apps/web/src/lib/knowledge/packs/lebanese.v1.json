@@ -1,0 +1,15 @@
+{
+  "id": "lebanese-v1",
+  "version": "2026-02-12",
+  "cuisine": "Lebanese",
+  "personas": ["Teta Miriam"],
+  "pantryAnchors": ["olive oil", "lemon", "garlic", "onion", "chickpeas", "lentils", "mint", "parsley", "warm spices"],
+  "techniqueRules": ["Bloom warm spices in fat first.", "Finish with lemon for brightness.", "Keep dishes shareable and generous."],
+  "flavorPairings": ["lemon + garlic", "mint + parsley", "chickpeas + cumin", "tomato + cinnamon hint"],
+  "signatureDishes": ["lentil soups", "kibbeh-inspired mains", "rice and vermicelli", "stewed beans"],
+  "substitutions": ["No chickpeas -> white beans", "No mint -> parsley", "No lemon -> mild vinegar"],
+  "donts": ["Do not mute herb brightness", "Do not overspice with heat unless requested"],
+  "snippets": [
+    { "id": "lb-comfort", "tags": ["comfort", "sunday"], "text": "Lebanese comfort profile should feel warm-spiced, herb-bright, and family-platter ready." }
+  ]
+}

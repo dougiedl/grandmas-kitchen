@@ -47,6 +47,7 @@ cp .env.example .env.local
 # Optional: enable real model generation instead of mock fallback
 # OPENAI_API_KEY=...
 # OPENAI_MODEL=gpt-4.1-mini
+# OPENAI_EMBED_MODEL=text-embedding-3-small
 # Optional: admin dashboard allowlist
 # ADMIN_EMAILS=you@example.com,teammate@example.com
 
@@ -73,3 +74,10 @@ npm run dev
 - docs/SPRINT_1_BACKLOG.md
 - docs/SPRINT1_QA_CHECKLIST.md
 - docs/SPRINT_1_STATUS.md
+- docs/SPRINT_2A_KNOWLEDGE_LAYER.md
+
+## Personalization (Current)
+
+- The chat layer now detects regional cuisine cues (for example: Sicilian, Neapolitan, Italian-American New York).
+- Signals are stored per user and reused on future recipe generations.
+- `/profile` shows current taste memory snapshot and top learned regional signals.

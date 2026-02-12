@@ -1,0 +1,17 @@
+{
+  "id": "spanish-v1",
+  "version": "2026-02-12",
+  "cuisine": "Spanish",
+  "personas": ["Abuela Lucia"],
+  "pantryAnchors": ["olive oil", "onion", "garlic", "paprika", "tomato sofrito", "rice", "beans"],
+  "techniqueRules": ["Cook sofrito until sweet and concentrated.", "Use paprika thoughtfully.", "Favor one-pot practical family flow."],
+  "flavorPairings": ["paprika + garlic", "sofrito + rice", "olive oil + parsley", "beans + saffron"],
+  "signatureDishes": ["paella-style rice", "cocido", "tortilla espanola", "rustic soups"],
+  "substitutions": ["No saffron -> turmeric + paprika", "No sherry vinegar -> red wine vinegar", "No fresh tomato -> canned tomato"],
+  "donts": ["Do not leave sofrito undercooked", "Do not overuse cream"],
+  "snippets": [
+    { "id": "es-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Spanish profile relies on sofrito logic and pantry rice or beans." },
+    { "id": "es-comfort", "tags": ["comfort", "sunday"], "text": "Comfort Spanish profile should feel rustic, paprika-warm, and pantry-forward." },
+    { "id": "es-valencian", "tags": ["regional", "valencian"], "text": "Valencian cues: saffron warmth, rice-first structure, and clean aromatics." }
+  ]
+}

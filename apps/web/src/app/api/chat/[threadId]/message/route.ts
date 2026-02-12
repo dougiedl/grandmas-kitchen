@@ -7,6 +7,12 @@ import {
   type RegenerationStyle,
 } from "@/lib/chat/recipe-schema";
 import { getPool } from "@/lib/db/pool";
+import {
+  extractRegionalSignals,
+  loadPersonalizationContext,
+  persistSignals,
+  upsertTasteProfile,
+} from "@/lib/personalization/profile";
 
 type MessagePayload = {
   content?: string;
@@ -33,7 +39,7 @@ export async function POST(
   const pool = getPool();
   const threadResult = await pool.query(
     `
-      select t.id, t.user_id, p.name as persona_name, p.cuisine
+      select t.id, t.user_id, t.persona_id, p.name as persona_name, p.cuisine
       from conversation_threads t
       join users u on u.id = t.user_id
       left join grandma_personas p on p.id = t.persona_id
@@ -74,6 +80,24 @@ export async function POST(
     ? `${basePrompt}\n\nRequested adjustment: ${instruction}`
     : basePrompt;
 
+  const cuisine = thread.cuisine ?? "Home Style";
+  const promptSignals = extractRegionalSignals(generationPrompt, cuisine);
+  const personalizationContext = await loadPersonalizationContext({
+    pool,
+    userId: thread.user_id,
+    cuisine,
+    prompt: generationPrompt,
+  });
+
+  await persistSignals({
+    pool,
+    userId: thread.user_id,
+    threadId,
+    cuisine,
+    source: "chat_prompt",
+    signals: promptSignals,
+  });
+
   let userMessageId: string | null = null;
   if (!body.regenerateFromLatest) {
     userMessageId = randomUUID();
@@ -85,9 +109,11 @@ export async function POST(
 
   const recipe = await generateRecipe({
     personaName: thread.persona_name ?? "Grandma",
-    cuisine: thread.cuisine ?? "Home Style",
+    cuisine,
     prompt: generationPrompt,
     regenerationStyle,
+    regionalStyle: personalizationContext.regionalStyle,
+    preferenceNotes: personalizationContext.preferenceNotes,
   });
 
   const styleText =
@@ -111,6 +137,15 @@ export async function POST(
     `insert into messages (id, thread_id, role, content, parsed_entities) values ($1, $2, 'assistant', $3, $4)`,
     [assistantMessageId, threadId, assistantContent, JSON.stringify({ recipe, regenerationStyle, recipeId })],
   );
+
+  await upsertTasteProfile({
+    pool,
+    userId: thread.user_id,
+    lastPersonaId: thread.persona_id,
+    lastCuisine: cuisine,
+    lastRegionalStyle: personalizationContext.regionalStyle ?? null,
+    incrementGenerations: true,
+  });
 
   await pool.query(
     `

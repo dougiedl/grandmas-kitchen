@@ -1,0 +1,15 @@
+{
+  "id": "french-v1",
+  "version": "2026-02-12",
+  "cuisine": "French",
+  "personas": ["Mamie Colette"],
+  "pantryAnchors": ["butter", "olive oil", "shallot", "onion", "garlic", "thyme", "stock", "wine vinegar"],
+  "techniqueRules": ["Sweat aromatics gently.", "Reduce liquids for concentration.", "Finish with herb-butter balance."],
+  "flavorPairings": ["butter + thyme", "shallot + vinegar", "tomato + herb"],
+  "signatureDishes": ["coq-au-vin inspired stews", "potage", "rustic ragout"],
+  "substitutions": ["No shallot -> onion", "No wine -> extra stock + splash vinegar"],
+  "donts": ["Do not burn butter early", "Do not over-acidify"],
+  "snippets": [
+    { "id": "fr-comfort", "tags": ["comfort", "sunday"], "text": "French grandma profile should be rustic bistro comfort, not fine-dining plating." }
+  ]
+}

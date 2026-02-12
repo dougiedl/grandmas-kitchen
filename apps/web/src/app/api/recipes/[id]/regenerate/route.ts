@@ -4,6 +4,12 @@ import { auth } from "@/lib/auth/auth";
 import { generateRecipe } from "@/lib/chat/generate-recipe";
 import { parseRegenerationStyle, type RegenerationStyle } from "@/lib/chat/recipe-schema";
 import { getPool } from "@/lib/db/pool";
+import {
+  extractRegionalSignals,
+  loadPersonalizationContext,
+  persistSignals,
+  upsertTasteProfile,
+} from "@/lib/personalization/profile";
 
 type RegeneratePayload = {
   regenerationStyle?: RegenerationStyle;
@@ -67,11 +73,31 @@ export async function POST(
     .filter(Boolean)
     .join("\n");
 
+  const cuisine = source.cuisine ?? "Home Style";
+  const promptSignals = extractRegionalSignals(prompt, cuisine);
+  const personalizationContext = await loadPersonalizationContext({
+    pool,
+    userId: source.user_id,
+    cuisine,
+    prompt,
+  });
+
+  await persistSignals({
+    pool,
+    userId: source.user_id,
+    threadId: source.thread_id,
+    cuisine,
+    source: "recipe_regenerate",
+    signals: promptSignals,
+  });
+
   const recipe = await generateRecipe({
     personaName: "Grandma",
-    cuisine: source.cuisine ?? "Home Style",
+    cuisine,
     prompt,
     regenerationStyle,
+    regionalStyle: personalizationContext.regionalStyle,
+    preferenceNotes: personalizationContext.preferenceNotes,
   });
 
   const newRecipeId = randomUUID();
@@ -91,6 +117,14 @@ export async function POST(
       JSON.stringify(recipe),
     ],
   );
+
+  await upsertTasteProfile({
+    pool,
+    userId: source.user_id,
+    lastCuisine: cuisine,
+    lastRegionalStyle: personalizationContext.regionalStyle ?? null,
+    incrementGenerations: true,
+  });
 
   await pool.query(
     `

@@ -1,0 +1,24 @@
+{
+  "id": "italian-v1",
+  "version": "2026-02-12",
+  "cuisine": "Italian",
+  "personas": ["Nonna Rosa"],
+  "pantryAnchors": ["olive oil", "garlic", "onion", "tomato passata", "parmigiano or pecorino", "dried pasta"],
+  "techniqueRules": [
+    "Start with soffritto and cook until sweet.",
+    "Marry pasta and sauce with pasta water.",
+    "Season in layers and finish with acid or cheese."
+  ],
+  "flavorPairings": ["tomato + basil", "garlic + olive oil", "pecorino + black pepper", "anchovy + capers"],
+  "signatureDishes": ["Sunday gravy", "ragu", "pasta al forno", "minestrone", "risotto"],
+  "substitutions": ["No passata -> crushed tomatoes + pinch of sugar", "No parmigiano -> pecorino", "No basil -> parsley + oregano"],
+  "donts": ["Avoid random non-Italian spice mixes", "Do not under-salt pasta water", "Avoid heavy cream unless requested"],
+  "snippets": [
+    { "id": "it-sunday", "tags": ["sunday", "comfort", "batch"], "text": "For Sunday comfort, simmer sauce low and let it rest before serving." },
+    { "id": "it-weeknight", "tags": ["weeknight", "quick"], "text": "For weeknights, use short simmer and one-pan finishing for speed without losing depth." },
+    { "id": "it-sicilian", "tags": ["regional", "sicilian"], "text": "Sicilian cues: sweet-sour balance, capers or anchovy optional, toasted breadcrumbs." },
+    { "id": "it-neapolitan", "tags": ["regional", "neapolitan"], "text": "Neapolitan cues: tomato purity, garlic, basil, and fewer ingredients." },
+    { "id": "it-ny", "tags": ["regional", "italian-american", "new york"], "text": "Italian-American New York cues: red-sauce generosity, meatball-friendly texture, family-size portions." },
+    { "id": "it-kids", "tags": ["kid-friendly"], "text": "Kid-friendly Italian: softer acidity, mild herbs, no aggressive heat." }
+  ]
+}

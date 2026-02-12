@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { getPool } from "@/lib/db/pool";
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
+import { upsertTasteProfile } from "@/lib/personalization/profile";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -38,6 +39,14 @@ export async function POST(request: NextRequest) {
     `insert into conversation_threads (id, user_id, persona_id) values ($1, $2, $3)`,
     [threadId, userId, persona.id],
   );
+
+  await upsertTasteProfile({
+    pool,
+    userId,
+    lastPersonaId: persona.id,
+    lastCuisine: persona.cuisine,
+    incrementGenerations: false,
+  });
 
   const greeting = `I am ${persona.name}. Tell me what ingredients you have and what you are craving.`;
 

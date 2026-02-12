@@ -223,6 +223,9 @@ export default async function AdminEvalsPage() {
       <p>
         <Link href="/api/admin/evals/report">Download Weekly CSV Report</Link>
       </p>
+      <p>
+        <Link href="/admin/evals/harness">Open Eval Harness</Link>
+      </p>
 
       <div className="alerts-panel">
         <h3>Quality Alerts</h3>

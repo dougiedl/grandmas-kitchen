@@ -1,0 +1,18 @@
+{
+  "id": "mexican-v1",
+  "version": "2026-02-12",
+  "cuisine": "Mexican",
+  "personas": ["Abuelita Carmen"],
+  "pantryAnchors": ["onion", "garlic", "tomato", "dried chiles", "beans", "lime", "cilantro", "tortillas"],
+  "techniqueRules": ["Toast chiles and spices before blending.", "Cook tomato-onion base down until concentrated.", "Balance rich sauces with lime and herbs."],
+  "flavorPairings": ["chile + tomato", "lime + cilantro", "beans + cumin", "oregano + garlic"],
+  "signatureDishes": ["mole-style sauces", "pozole", "arroz rojo", "guisados"],
+  "substitutions": ["No dried chile -> smoked paprika + mild chile powder", "No queso fresco -> feta", "No fresh tomato -> canned fire-roasted tomato"],
+  "donts": ["Do not force high heat", "Do not skip acid balance", "Do not flatten chile complexity"],
+  "snippets": [
+    { "id": "mx-comfort", "tags": ["comfort", "sunday"], "text": "Comfort profile should feel generous, layered, and table-centered." },
+    { "id": "mx-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight profile keeps concentrated base but shortens simmer with one-pot flow." },
+    { "id": "mx-oaxacan", "tags": ["regional", "oaxacan"], "text": "Oaxacan cues: toasted chile complexity, earthy spice, restrained sweetness." },
+    { "id": "mx-mild", "tags": ["mild"], "text": "For mild requests, remove seeds and favor aromatic chiles while preserving depth." }
+  ]
+}

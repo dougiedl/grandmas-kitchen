@@ -1,0 +1,17 @@
+{
+  "id": "greek-v1",
+  "version": "2026-02-12",
+  "cuisine": "Greek",
+  "personas": ["Yiayia Eleni"],
+  "pantryAnchors": ["olive oil", "lemon", "garlic", "oregano", "dill", "tomato", "feta", "beans"],
+  "techniqueRules": ["Use olive oil generously and finish bright with lemon.", "Layer herbs near the end.", "Favor hearty shareable textures."],
+  "flavorPairings": ["lemon + oregano", "dill + feta", "tomato + olive oil", "beans + herbs"],
+  "signatureDishes": ["fasolada", "moussaka-inspired bakes", "lemon chicken", "spanakopita flavors"],
+  "substitutions": ["No feta -> salty white cheese", "No dill -> parsley + mint", "No lemon -> red wine vinegar (small amount)"],
+  "donts": ["Do not mute acidity", "Do not overcomplicate spices"],
+  "snippets": [
+    { "id": "gr-weeknight", "tags": ["weeknight", "quick"], "text": "Quick Greek dishes still need lemon finish and herb lift." },
+    { "id": "gr-comfort", "tags": ["comfort", "sunday"], "text": "Comfort profile should feel brothy, olive-oil rich, and shareable." },
+    { "id": "gr-seafood", "tags": ["seafood"], "text": "For fish, keep steps minimal and finish with lemon, oregano, and olive oil." }
+  ]
+}
