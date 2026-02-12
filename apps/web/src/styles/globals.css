@@ -214,6 +214,47 @@ body {
   padding: 1rem;
 }
 
+.regen-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.6rem 0 0.9rem;
+}
+
+.regen-row button {
+  background: #f5e0c9;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  color: #4a2f24;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+}
+
+.regen-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.recipe-list-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-top: 0.9rem;
+}
+
+.recipe-list-card {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.recipe-list-date {
+  color: #6a4a3a;
+  font-size: 0.85rem;
+}
+
 .error-text {
   color: #8f4f2c;
   font-weight: 700;

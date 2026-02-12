@@ -44,6 +44,10 @@ docker compose up -d postgres
 # 3) Configure environment
 cp .env.example .env.local
 
+# Optional: enable real model generation instead of mock fallback
+# OPENAI_API_KEY=...
+# OPENAI_MODEL=gpt-4.1-mini
+
 # 4) Run migrations
 npm run db:migrate
 

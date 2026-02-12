@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Grandma-inspired recipes that feel like home",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let session: Session | null = null;
 

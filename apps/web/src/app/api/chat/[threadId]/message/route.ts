@@ -1,8 +1,18 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
-import { createMockRecipe } from "@/lib/chat/mock-recipe";
+import { generateRecipe } from "@/lib/chat/generate-recipe";
+import {
+  parseRegenerationStyle,
+  type RegenerationStyle,
+} from "@/lib/chat/recipe-schema";
 import { getPool } from "@/lib/db/pool";
+
+type MessagePayload = {
+  content?: string;
+  regenerationStyle?: RegenerationStyle;
+  regenerateFromLatest?: boolean;
+};
 
 export async function POST(
   request: NextRequest,
@@ -16,12 +26,8 @@ export async function POST(
   }
 
   const { threadId } = await params;
-  const body = (await request.json()) as { content?: string };
-  const content = body.content?.trim();
-
-  if (!content) {
-    return NextResponse.json({ error: "Message content is required" }, { status: 400 });
-  }
+  const body = (await request.json()) as MessagePayload;
+  const regenerationStyle = parseRegenerationStyle(body.regenerationStyle);
 
   const pool = getPool();
   const threadResult = await pool.query(
@@ -42,20 +48,53 @@ export async function POST(
     return NextResponse.json({ error: "Thread not found" }, { status: 404 });
   }
 
-  const userMessageId = randomUUID();
-  await pool.query(
-    `insert into messages (id, thread_id, role, content) values ($1, $2, 'user', $3)`,
-    [userMessageId, threadId, content],
-  );
+  let basePrompt = body.content?.trim();
+  if (!basePrompt || body.regenerateFromLatest) {
+    const latestUserMessage = await pool.query(
+      `
+        select content
+        from messages
+        where thread_id = $1 and role = 'user'
+        order by created_at desc
+        limit 1
+      `,
+      [threadId],
+    );
 
-  const recipe = createMockRecipe({
+    basePrompt = basePrompt || (latestUserMessage.rows[0]?.content as string | undefined);
+  }
+
+  if (!basePrompt) {
+    return NextResponse.json({ error: "Message content is required" }, { status: 400 });
+  }
+
+  let userMessageId: string | null = null;
+  if (!body.regenerateFromLatest) {
+    userMessageId = randomUUID();
+    await pool.query(
+      `insert into messages (id, thread_id, role, content) values ($1, $2, 'user', $3)`,
+      [userMessageId, threadId, basePrompt],
+    );
+  }
+
+  const recipe = await generateRecipe({
     personaName: thread.persona_name ?? "Grandma",
     cuisine: thread.cuisine ?? "Home Style",
-    prompt: content,
+    prompt: basePrompt,
+    regenerationStyle,
   });
 
+  const styleText =
+    regenerationStyle === "faster"
+      ? "I made it faster"
+      : regenerationStyle === "traditional"
+        ? "I made it more traditional"
+        : regenerationStyle === "vegetarian"
+          ? "I made it vegetarian"
+          : "Here is your recipe";
+
   const assistantContent = [
-    `Tonight, let's make ${recipe.title}.`,
+    `${styleText}: let's make ${recipe.title}.`,
     `This is a ${recipe.cuisine} grandma-inspired dish for ${recipe.servings} servings.`,
     `Total time: ${recipe.totalMinutes} minutes.`,
   ].join(" ");
@@ -63,7 +102,7 @@ export async function POST(
   const assistantMessageId = randomUUID();
   await pool.query(
     `insert into messages (id, thread_id, role, content, parsed_entities) values ($1, $2, 'assistant', $3, $4)`,
-    [assistantMessageId, threadId, assistantContent, JSON.stringify({ recipe })],
+    [assistantMessageId, threadId, assistantContent, JSON.stringify({ recipe, regenerationStyle })],
   );
 
   await pool.query(
@@ -84,16 +123,18 @@ export async function POST(
   );
 
   return NextResponse.json({
-    userMessage: {
-      id: userMessageId,
-      role: "user",
-      content,
-    },
+    userMessage: userMessageId
+      ? {
+          id: userMessageId,
+          role: "user",
+          content: basePrompt,
+        }
+      : null,
     assistantMessage: {
       id: assistantMessageId,
       role: "assistant",
       content: assistantContent,
-      parsed_entities: { recipe },
+      parsed_entities: { recipe, regenerationStyle },
     },
     recipe,
   });

@@ -2,13 +2,14 @@
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { RegenerationStyle } from "@/lib/chat/recipe-schema";
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
 
 type Message = {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  parsed_entities?: { recipe?: Recipe };
+  parsed_entities?: { recipe?: Recipe; regenerationStyle?: RegenerationStyle };
 };
 
 type Recipe = {
@@ -38,6 +39,12 @@ type ThreadPayload = {
   messages: Message[];
 };
 
+type SendMessagePayload = {
+  content?: string;
+  regenerationStyle?: RegenerationStyle;
+  regenerateFromLatest?: boolean;
+};
+
 export function ChatClient({
   initialPersonaId,
   initialThreadId,
@@ -63,6 +70,16 @@ export function ChatClient({
     }
   }
 
+  async function refreshThreads() {
+    const response = await fetch("/api/chat/threads", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("Unable to load recent conversations");
+    }
+
+    const data = (await response.json()) as { threads: ThreadSummary[] };
+    setThreads(data.threads);
+  }
+
   const persona = useMemo(
     () => LAUNCH_PERSONAS.find((item) => item.id === activePersonaId),
     [activePersonaId],
@@ -71,13 +88,7 @@ export function ChatClient({
   useEffect(() => {
     async function fetchThreads() {
       try {
-        const response = await fetch("/api/chat/threads", { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Unable to load recent conversations");
-        }
-
-        const data = (await response.json()) as { threads: ThreadSummary[] };
-        setThreads(data.threads);
+        await refreshThreads();
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : "Unable to load conversations");
       }
@@ -109,12 +120,7 @@ export function ChatClient({
         const data = (await response.json()) as { threadId: string };
         setThreadId(data.threadId);
         router.replace(`/chat?persona=${activePersonaId}&thread=${data.threadId}`);
-
-        const threadsResponse = await fetch("/api/chat/threads", { cache: "no-store" });
-        if (threadsResponse.ok) {
-          const threadsData = (await threadsResponse.json()) as { threads: ThreadSummary[] };
-          setThreads(threadsData.threads);
-        }
+        await refreshThreads();
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : "Unable to start chat");
       } finally {
@@ -154,10 +160,8 @@ export function ChatClient({
     void fetchThread();
   }, [router, threadId]);
 
-  async function onSendMessage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!threadId || !input.trim()) {
+  async function sendMessage(payload: SendMessagePayload) {
+    if (!threadId) {
       return;
     }
 
@@ -168,7 +172,7 @@ export function ChatClient({
       const response = await fetch(`/api/chat/${threadId}/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: input.trim() }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -176,23 +180,39 @@ export function ChatClient({
       }
 
       const data = (await response.json()) as {
-        userMessage: Message;
+        userMessage: Message | null;
         assistantMessage: Message;
       };
 
-      setMessages((current) => [...current, data.userMessage, data.assistantMessage]);
+      setMessages((current) =>
+        data.userMessage ? [...current, data.userMessage, data.assistantMessage] : [...current, data.assistantMessage],
+      );
       setInput("");
-
-      const threadsResponse = await fetch("/api/chat/threads", { cache: "no-store" });
-      if (threadsResponse.ok) {
-        const threadsData = (await threadsResponse.json()) as { threads: ThreadSummary[] };
-        setThreads(threadsData.threads);
-      }
+      await refreshThreads();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to send message");
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function onSendMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const content = input.trim();
+    if (!threadId || !content) {
+      return;
+    }
+
+    await sendMessage({ content });
+  }
+
+  async function onRegenerate(style: RegenerationStyle) {
+    if (!threadId) {
+      return;
+    }
+
+    await sendMessage({ regenerationStyle: style, regenerateFromLatest: true });
   }
 
   function onResumeThread(thread: ThreadSummary) {
@@ -270,6 +290,17 @@ export function ChatClient({
             <p>
               {latestRecipe.cuisine} style • {latestRecipe.servings} servings • {latestRecipe.totalMinutes} min
             </p>
+            <div className="regen-row">
+              <button type="button" onClick={() => onRegenerate("faster")} disabled={isLoading}>
+                Make It Faster
+              </button>
+              <button type="button" onClick={() => onRegenerate("traditional")} disabled={isLoading}>
+                More Traditional
+              </button>
+              <button type="button" onClick={() => onRegenerate("vegetarian")} disabled={isLoading}>
+                Make Vegetarian
+              </button>
+            </div>
             <h4>Ingredients</h4>
             <ul>
               {latestRecipe.ingredients.map((ingredient) => (
@@ -284,6 +315,12 @@ export function ChatClient({
                 <li key={step}>{step}</li>
               ))}
             </ol>
+            <h4>Grandma Tips</h4>
+            <ul>
+              {latestRecipe.grandmaTips.map((tip) => (
+                <li key={tip}>{tip}</li>
+              ))}
+            </ul>
           </section>
         ) : null}
       </div>
