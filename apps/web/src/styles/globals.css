@@ -77,6 +77,8 @@ body {
   background: #f8f2e9;
   border: 1px solid #d8b26e;
   border-radius: 14px;
+  display: grid;
+  gap: 0.5rem;
   padding: 1rem;
 }
 
@@ -104,6 +106,119 @@ body {
   padding: 0.15rem 0.5rem;
 }
 
+.persona-cta {
+  color: var(--terracotta);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.chat-window {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.chat-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.chat-sidebar {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  height: fit-content;
+  padding: 0.8rem;
+}
+
+.thread-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.thread-item {
+  align-items: flex-start;
+  background: #fff8ef;
+  border: 1px solid #ead1ad;
+  border-radius: 10px;
+  cursor: pointer;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem;
+  text-align: left;
+}
+
+.thread-item-active {
+  border-color: #b86a3b;
+}
+
+.thread-preview {
+  color: #6a4a3a;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.msg {
+  background: #fff8ef;
+  border: 1px solid #ead1ad;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+}
+
+.msg-user {
+  border-color: #d8b26e;
+}
+
+.msg p {
+  margin: 0.4rem 0 0;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-form input {
+  border: 1px solid #d8b26e;
+  border-radius: 10px;
+  flex: 1;
+  padding: 0.7rem 0.75rem;
+}
+
+.chat-form button {
+  background: #b86a3b;
+  border: 1px solid #8f4f2c;
+  border-radius: 10px;
+  color: #fff8ef;
+  cursor: pointer;
+  padding: 0.7rem 1rem;
+}
+
+.chat-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.recipe-card {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.error-text {
+  color: #8f4f2c;
+  font-weight: 700;
+}
+
 .error-panel {
   background: #fff1e8;
   border: 1px solid #b86a3b;
@@ -111,4 +226,10 @@ body {
   margin: 2rem auto;
   max-width: 640px;
   padding: 1rem;
+}
+
+@media (max-width: 860px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+  }
 }

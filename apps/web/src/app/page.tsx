@@ -1,4 +1,5 @@
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
+import Link from "next/link";
 
 export default async function HomePage({
   searchParams,
@@ -12,7 +13,7 @@ export default async function HomePage({
     <section>
       <h2>Welcome Home</h2>
       <p>
-        Grandma's Kitchen turns ingredients, cravings, and family memories into grandma-inspired
+        Grandma&apos;s Kitchen turns ingredients, cravings, and family memories into grandma-inspired
         recipes.
       </p>
       {shouldPromptSignIn ? (
@@ -35,6 +36,9 @@ export default async function HomePage({
                 </span>
               ))}
             </div>
+            <Link className="persona-cta" href={`/chat?persona=${persona.id}`}>
+              Cook with {persona.name}
+            </Link>
           </article>
         ))}
       </div>

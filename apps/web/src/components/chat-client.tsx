@@ -1,0 +1,292 @@
+"use client";
+
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
+
+type Message = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  parsed_entities?: { recipe?: Recipe };
+};
+
+type Recipe = {
+  title: string;
+  cuisine: string;
+  servings: number;
+  totalMinutes: number;
+  ingredients: Array<{ amount: string; item: string }>;
+  steps: string[];
+  grandmaTips: string[];
+};
+
+type ThreadSummary = {
+  id: string;
+  persona_id: string | null;
+  persona_name: string | null;
+  cuisine: string | null;
+  last_message: string | null;
+  last_activity: string;
+};
+
+type ThreadPayload = {
+  thread: {
+    id: string;
+    persona_id: string | null;
+  };
+  messages: Message[];
+};
+
+export function ChatClient({
+  initialPersonaId,
+  initialThreadId,
+}: {
+  initialPersonaId?: string;
+  initialThreadId?: string;
+}) {
+  const router = useRouter();
+  const [threadId, setThreadId] = useState<string | null>(initialThreadId ?? null);
+  const [activePersonaId, setActivePersonaId] = useState<string | null>(initialPersonaId ?? null);
+  const [threads, setThreads] = useState<ThreadSummary[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function toApiError(response: Response, fallback: string) {
+    try {
+      const data = (await response.json()) as { error?: string };
+      return data.error ? `${fallback}: ${data.error}` : `${fallback} (status ${response.status})`;
+    } catch {
+      return `${fallback} (status ${response.status})`;
+    }
+  }
+
+  const persona = useMemo(
+    () => LAUNCH_PERSONAS.find((item) => item.id === activePersonaId),
+    [activePersonaId],
+  );
+
+  useEffect(() => {
+    async function fetchThreads() {
+      try {
+        const response = await fetch("/api/chat/threads", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Unable to load recent conversations");
+        }
+
+        const data = (await response.json()) as { threads: ThreadSummary[] };
+        setThreads(data.threads);
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to load conversations");
+      }
+    }
+
+    void fetchThreads();
+  }, []);
+
+  useEffect(() => {
+    async function startThread() {
+      if (threadId || !activePersonaId) {
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/chat/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ personaId: activePersonaId }),
+        });
+
+        if (!response.ok) {
+          throw new Error(await toApiError(response, "Unable to start chat thread"));
+        }
+
+        const data = (await response.json()) as { threadId: string };
+        setThreadId(data.threadId);
+        router.replace(`/chat?persona=${activePersonaId}&thread=${data.threadId}`);
+
+        const threadsResponse = await fetch("/api/chat/threads", { cache: "no-store" });
+        if (threadsResponse.ok) {
+          const threadsData = (await threadsResponse.json()) as { threads: ThreadSummary[] };
+          setThreads(threadsData.threads);
+        }
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to start chat");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void startThread();
+  }, [activePersonaId, router, threadId]);
+
+  useEffect(() => {
+    async function fetchThread() {
+      if (!threadId) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/chat/${threadId}`, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(await toApiError(response, "Unable to load thread messages"));
+        }
+
+        const data = (await response.json()) as ThreadPayload;
+        setMessages(data.messages);
+
+        if (data.thread.persona_id) {
+          setActivePersonaId(data.thread.persona_id);
+          router.replace(`/chat?persona=${data.thread.persona_id}&thread=${threadId}`);
+        } else {
+          router.replace(`/chat?thread=${threadId}`);
+        }
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to load messages");
+      }
+    }
+
+    void fetchThread();
+  }, [router, threadId]);
+
+  async function onSendMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!threadId || !input.trim()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/chat/${threadId}/message`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: input.trim() }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await toApiError(response, "Unable to send message"));
+      }
+
+      const data = (await response.json()) as {
+        userMessage: Message;
+        assistantMessage: Message;
+      };
+
+      setMessages((current) => [...current, data.userMessage, data.assistantMessage]);
+      setInput("");
+
+      const threadsResponse = await fetch("/api/chat/threads", { cache: "no-store" });
+      if (threadsResponse.ok) {
+        const threadsData = (await threadsResponse.json()) as { threads: ThreadSummary[] };
+        setThreads(threadsData.threads);
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to send message");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function onResumeThread(thread: ThreadSummary) {
+    setThreadId(thread.id);
+    setActivePersonaId(thread.persona_id);
+    setMessages([]);
+    router.replace(
+      thread.persona_id ? `/chat?persona=${thread.persona_id}&thread=${thread.id}` : `/chat?thread=${thread.id}`,
+    );
+  }
+
+  const latestRecipe = [...messages]
+    .reverse()
+    .find((message) => message.parsed_entities?.recipe)?.parsed_entities?.recipe;
+
+  return (
+    <section className="chat-layout">
+      <aside className="chat-sidebar">
+        <h3>Recent Conversations</h3>
+        {threads.length === 0 ? <p>No saved chats yet.</p> : null}
+        <div className="thread-list">
+          {threads.map((thread) => {
+            const isActive = thread.id === threadId;
+            return (
+              <button
+                type="button"
+                key={thread.id}
+                className={isActive ? "thread-item thread-item-active" : "thread-item"}
+                onClick={() => onResumeThread(thread)}
+              >
+                <strong>{thread.persona_name ?? "Grandma"}</strong>
+                <span>{thread.cuisine ?? "Home Style"}</span>
+                <span className="thread-preview">{thread.last_message ?? "No messages yet"}</span>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      <div>
+        <h2>Chat</h2>
+        {!activePersonaId ? <p>Select a grandma style from Home to begin cooking.</p> : null}
+        {persona ? (
+          <p>
+            Cooking with {persona.name} ({persona.cuisine})
+          </p>
+        ) : null}
+        {error ? <p className="error-text">{error}</p> : null}
+
+        <div className="chat-window">
+          {messages.map((message) => (
+            <article key={message.id} className={message.role === "user" ? "msg msg-user" : "msg"}>
+              <strong>{message.role === "user" ? "You" : "Grandma"}</strong>
+              <p>{message.content}</p>
+            </article>
+          ))}
+        </div>
+
+        <form onSubmit={onSendMessage} className="chat-form">
+          <input
+            type="text"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="I have chicken, tomatoes, onions, and garlic..."
+            disabled={!threadId || isLoading}
+          />
+          <button type="submit" disabled={!threadId || isLoading || !input.trim()}>
+            Send
+          </button>
+        </form>
+
+        {latestRecipe ? (
+          <section className="recipe-card">
+            <h3>{latestRecipe.title}</h3>
+            <p>
+              {latestRecipe.cuisine} style • {latestRecipe.servings} servings • {latestRecipe.totalMinutes} min
+            </p>
+            <h4>Ingredients</h4>
+            <ul>
+              {latestRecipe.ingredients.map((ingredient) => (
+                <li key={`${ingredient.amount}-${ingredient.item}`}>
+                  {ingredient.amount} {ingredient.item}
+                </li>
+              ))}
+            </ul>
+            <h4>Steps</h4>
+            <ol>
+              {latestRecipe.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+      </div>
+    </section>
+  );
+}

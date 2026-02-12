@@ -1,8 +1,13 @@
-export default function ChatPage() {
-  return (
-    <section>
-      <h2>Chat</h2>
-      <p>Conversation workspace scaffold. Persona-driven recipe chat lands here.</p>
-    </section>
-  );
+import { ChatClient } from "@/components/chat-client";
+
+export default async function ChatPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ persona?: string; thread?: string }>;
+}) {
+  const params = await searchParams;
+  const initialPersonaId = params?.persona;
+  const initialThreadId = params?.thread;
+
+  return <ChatClient initialPersonaId={initialPersonaId} initialThreadId={initialThreadId} />;
 }
