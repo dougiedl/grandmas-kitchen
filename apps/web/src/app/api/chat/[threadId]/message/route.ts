@@ -100,9 +100,10 @@ export async function POST(
   ].join(" ");
 
   const assistantMessageId = randomUUID();
+  const recipeId = randomUUID();
   await pool.query(
     `insert into messages (id, thread_id, role, content, parsed_entities) values ($1, $2, 'assistant', $3, $4)`,
-    [assistantMessageId, threadId, assistantContent, JSON.stringify({ recipe, regenerationStyle })],
+    [assistantMessageId, threadId, assistantContent, JSON.stringify({ recipe, regenerationStyle, recipeId })],
   );
 
   await pool.query(
@@ -111,7 +112,7 @@ export async function POST(
       values ($1, $2, $3, $4, $5, $6, $7, $8)
     `,
     [
-      randomUUID(),
+      recipeId,
       thread.user_id,
       threadId,
       recipe.title,
@@ -119,6 +120,18 @@ export async function POST(
       recipe.servings,
       recipe.totalMinutes,
       JSON.stringify(recipe),
+    ],
+  );
+
+  await pool.query(
+    `
+      insert into analytics_events (id, user_id, event_name, event_props)
+      values ($1, $2, 'recipe_generated', $3::jsonb)
+    `,
+    [
+      randomUUID(),
+      thread.user_id,
+      JSON.stringify({ threadId, recipeId, regenerationStyle: regenerationStyle ?? null }),
     ],
   );
 
@@ -134,8 +147,9 @@ export async function POST(
       id: assistantMessageId,
       role: "assistant",
       content: assistantContent,
-      parsed_entities: { recipe, regenerationStyle },
+      parsed_entities: { recipe, regenerationStyle, recipeId },
     },
+    recipeId,
     recipe,
   });
 }

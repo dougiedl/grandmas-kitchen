@@ -92,6 +92,22 @@ export async function POST(
     ],
   );
 
+  await pool.query(
+    `
+      insert into analytics_events (id, user_id, event_name, event_props)
+      values ($1, $2, 'recipe_regenerated_from_detail', $3::jsonb)
+    `,
+    [
+      randomUUID(),
+      source.user_id,
+      JSON.stringify({
+        sourceRecipeId: source.id,
+        newRecipeId,
+        regenerationStyle: regenerationStyle ?? null,
+      }),
+    ],
+  );
+
   return NextResponse.json({
     recipeId: newRecipeId,
     recipe,

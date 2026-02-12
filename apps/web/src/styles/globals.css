@@ -236,6 +236,23 @@ body {
   opacity: 0.55;
 }
 
+.feedback-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.5rem 0 0.9rem;
+}
+
+.feedback-row button {
+  background: #fff8ef;
+  border: 1px solid #d8b26e;
+  border-radius: 999px;
+  color: #4a2f24;
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.65rem;
+}
+
 .recipe-list-grid {
   display: grid;
   gap: 1rem;
@@ -352,6 +369,20 @@ body {
 }
 
 .compare-card {
+  background: #f8f2e9;
+  border: 1px solid #d8b26e;
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-top: 1rem;
+}
+
+.admin-card {
   background: #f8f2e9;
   border: 1px solid #d8b26e;
   border-radius: 12px;

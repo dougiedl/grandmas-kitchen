@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/chat", label: "Chat" },
   { href: "/profile", label: "Profile" },
   { href: "/recipes", label: "Recipes" },
+  { href: "/admin/evals", label: "Admin" },
 ];
 
 export function TopNav() {

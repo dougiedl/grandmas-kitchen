@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 
-const PROTECTED_PREFIXES = ["/chat", "/profile", "/recipes"];
+const PROTECTED_PREFIXES = ["/chat", "/profile", "/recipes", "/admin"];
 
 export default auth((req) => {
   const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();

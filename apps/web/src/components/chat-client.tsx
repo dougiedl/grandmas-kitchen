@@ -9,7 +9,11 @@ type Message = {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
-  parsed_entities?: { recipe?: Recipe; regenerationStyle?: RegenerationStyle };
+  parsed_entities?: {
+    recipe?: Recipe;
+    regenerationStyle?: RegenerationStyle;
+    recipeId?: string;
+  };
 };
 
 type Recipe = {
@@ -227,6 +231,9 @@ export function ChatClient({
   const latestRecipe = [...messages]
     .reverse()
     .find((message) => message.parsed_entities?.recipe)?.parsed_entities?.recipe;
+  const latestRecipeId = [...messages]
+    .reverse()
+    .find((message) => message.parsed_entities?.recipeId)?.parsed_entities?.recipeId;
 
   const recipeHistory = messages
     .filter((message) => message.role === "assistant" && message.parsed_entities?.recipe)
@@ -258,6 +265,26 @@ export function ChatClient({
       return "Minor wording/technique adjustments";
     }
     return changes.join(" • ");
+  }
+
+  async function submitRecipeFeedback(category: "too_salty" | "too_bland" | "too_long" | "too_spicy") {
+    if (!latestRecipeId) {
+      setError("No saved recipe id found for feedback.");
+      return;
+    }
+
+    setError(null);
+    const response = await fetch(`/api/recipes/${latestRecipeId}/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category }),
+    });
+
+    if (!response.ok) {
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      setError(data.error ?? "Unable to submit feedback");
+      return;
+    }
   }
 
   return (
@@ -353,6 +380,21 @@ export function ChatClient({
                 <li key={tip}>{tip}</li>
               ))}
             </ul>
+            <h4>Quick Feedback</h4>
+            <div className="feedback-row">
+              <button type="button" onClick={() => submitRecipeFeedback("too_salty")}>
+                Too Salty
+              </button>
+              <button type="button" onClick={() => submitRecipeFeedback("too_bland")}>
+                Too Bland
+              </button>
+              <button type="button" onClick={() => submitRecipeFeedback("too_long")}>
+                Too Long
+              </button>
+              <button type="button" onClick={() => submitRecipeFeedback("too_spicy")}>
+                Too Spicy
+              </button>
+            </div>
 
             <h4>Recipe History</h4>
             <div className="history-list">
