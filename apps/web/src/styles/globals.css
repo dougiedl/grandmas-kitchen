@@ -350,6 +350,33 @@ a:hover {
   margin: 0.95rem 0 0.8rem;
 }
 
+.home-welcome-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin-bottom: 0.82rem;
+}
+
+.home-welcome-card {
+  background: linear-gradient(162deg, rgba(253, 244, 230, 0.86), rgba(240, 223, 198, 0.82));
+  border: 1px solid rgba(201, 138, 77, 0.4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 0.7rem 0.8rem;
+}
+
+.home-welcome-card strong {
+  display: block;
+  margin-bottom: 0.22rem;
+}
+
+.home-welcome-card p {
+  color: var(--ink-700);
+  font-size: 0.95rem;
+  line-height: 1.38;
+  margin: 0;
+}
+
 .onboarding-step {
   background: linear-gradient(160deg, rgba(250, 240, 226, 0.86), rgba(239, 221, 196, 0.84));
   border: 1px solid rgba(201, 138, 77, 0.42);
@@ -550,6 +577,12 @@ a:hover {
 .style-inference-reason {
   color: var(--ink-700);
   font-size: 0.92rem;
+}
+
+.style-inference-helper {
+  color: var(--ink-700);
+  font-size: 0.92rem;
+  margin-top: 0.24rem;
 }
 
 .style-inference-actions,
@@ -1220,6 +1253,11 @@ select {
   .onboarding-strip {
     gap: 0.55rem;
     margin-top: 0.75rem;
+  }
+
+  .home-welcome-grid {
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
   }
 
   .onboarding-step {

@@ -77,14 +77,15 @@ export function HomeCultureHero({ cuisines, shouldPromptSignIn }: Props) {
 
   return (
     <section className={`home-hero home-hero-rotating ${cultureClass(active.cuisine)}`}>
-      <p className="section-kicker">Nostalgia-first recipe companion</p>
+      <p className="section-kicker">Cook like grandma is beside you</p>
       <h2>Welcome Home</h2>
       <p className="lead-text">
-        Turn ingredients, cravings, and family food memories into recipes that feel like home.
+        Every family has a flavor memory. Share yours in your own words, and we will turn it into a recipe that feels
+        familiar, comforting, and true to your table.
       </p>
       <div className="home-culture-badge-row">
         <p className="home-culture-badge">
-          Currently featuring <strong>{active.cuisine}</strong> kitchens
+          Tonight&apos;s featured kitchen: <strong>{active.cuisine}</strong>
         </p>
         <p className="home-culture-line">{active.line}</p>
       </div>
@@ -105,10 +106,12 @@ export function HomeCultureHero({ cuisines, shouldPromptSignIn }: Props) {
       </div>
       {shouldPromptSignIn ? (
         <p className="signin-prompt">
-          Sign in to start your personalized grandma chat and save recipes.
+          Sign in to start your personalized grandma chat, save family versions, and build your own recipe memory book.
         </p>
       ) : null}
-      <p>Pick a grandma style below, or jump to Chat and describe your own background in your own words.</p>
+      <p>
+        Start with your memory first. We&apos;ll help identify the closest style and refine it as you share more detail.
+      </p>
     </section>
   );
 }

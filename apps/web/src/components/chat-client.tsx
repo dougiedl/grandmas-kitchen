@@ -1057,10 +1057,14 @@ export function ChatClient({
             <p className="section-kicker">Style suggestion</p>
             {styleInference.requiresClarification ? (
               <>
-                <h4>Need one more clue</h4>
+                <h4>Let&apos;s match your grandma style</h4>
                 <p>
                   {styleInference.clarificationPrompt ??
-                    "Tell me your grandma's culture or region so I can choose the right cooking tradition."}
+                    "Give me one memory clue: where your grandma cooked from, or a dish she was known for."}
+                </p>
+                <p className="style-inference-helper">
+                  Example: &quot;She was from Naples and made Sunday fish stew,&quot; or &quot;Our family did Puerto
+                  Rican arroz con gandules every holiday.&quot;
                 </p>
               </>
             ) : styleInference.primaryStyle ? (
@@ -1111,7 +1115,7 @@ export function ChatClient({
               <div className="style-inference-options">
                 {styleInference.suggestedCuisines?.slice(0, 8).map((cuisine) => (
                   <button key={cuisine} type="button" onClick={() => onUseClarificationCuisine(cuisine)} disabled={isLoading}>
-                    {cuisine}
+                    Closest to {cuisine}
                   </button>
                 ))}
               </div>
