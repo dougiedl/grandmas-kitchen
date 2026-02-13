@@ -37,60 +37,69 @@ export default async function RecipesPage() {
   }
 
   const pool = getPool();
-  const recipeColumnsResult = await pool.query<{ column_name: string }>(
-    `
-      select column_name
-      from information_schema.columns
-      where table_schema = 'public' and table_name = 'recipes'
-    `,
-  );
-  const recipeColumnSet = new Set(recipeColumnsResult.rows.map((row) => row.column_name));
-  const favoriteSelect = recipeColumnSet.has("is_favorite")
-    ? "r.is_favorite"
-    : "false::boolean as is_favorite";
-  const promotedSelect = recipeColumnSet.has("is_promoted")
-    ? "r.is_promoted"
-    : "false::boolean as is_promoted";
+  try {
+    const recipeColumnsResult = await pool.query<{ column_name: string }>(
+      `
+        select column_name
+        from information_schema.columns
+        where table_schema = 'public' and table_name = 'recipes'
+      `,
+    );
+    const recipeColumnSet = new Set(recipeColumnsResult.rows.map((row) => row.column_name));
+    const favoriteSelect = recipeColumnSet.has("is_favorite")
+      ? "r.is_favorite"
+      : "false::boolean as is_favorite";
+    const promotedSelect = recipeColumnSet.has("is_promoted")
+      ? "r.is_promoted"
+      : "false::boolean as is_promoted";
 
-  const result = await pool.query<RecipeRecord>(
-    `
-      select
-        r.id,
-        r.title,
-        r.cuisine,
-        r.servings,
-        r.total_minutes,
-        ${favoriteSelect},
-        ${promotedSelect},
-        r.created_at,
-        r.recipe_json
-      from recipes r
-      join users u on u.id = r.user_id
-      where u.email = $1
-      order by r.created_at desc
-      limit 30
-    `,
-    [email],
-  );
+    const result = await pool.query<RecipeRecord>(
+      `
+        select
+          r.id,
+          r.title,
+          r.cuisine,
+          r.servings,
+          r.total_minutes,
+          ${favoriteSelect},
+          ${promotedSelect},
+          r.created_at,
+          r.recipe_json
+        from recipes r
+        join users u on u.id = r.user_id
+        where u.email = $1
+        order by r.created_at desc
+        limit 30
+      `,
+      [email],
+    );
 
-  const discoveryResult = await pool.query<DiscoveryRow>(
-    `
-      select
-        coalesce(cuisine, 'Home Style') as cuisine,
-        title,
-        count(*)::text as recipe_count
-      from recipes
-      where created_at > now() - interval '30 days'
-      group by coalesce(cuisine, 'Home Style'), title
-      order by count(*) desc, max(created_at) desc
-      limit 12
-    `,
-  );
+    const discoveryResult = await pool.query<DiscoveryRow>(
+      `
+        select
+          coalesce(cuisine, 'Home Style') as cuisine,
+          title,
+          count(*)::text as recipe_count
+        from recipes
+        where created_at > now() - interval '30 days'
+        group by coalesce(cuisine, 'Home Style'), title
+        order by count(*) desc, max(created_at) desc
+        limit 12
+      `,
+    );
 
-  return (
-    <section className="kitchen-theme kitchen-theme-home">
-      <RecipesListClient initialRecipes={result.rows} />
-      <CommunityTrendsClient rows={discoveryResult.rows} />
-    </section>
-  );
+    return (
+      <section className="kitchen-theme kitchen-theme-home">
+        <RecipesListClient initialRecipes={result.rows} />
+        <CommunityTrendsClient rows={discoveryResult.rows} />
+      </section>
+    );
+  } catch {
+    return (
+      <section>
+        <h2>Recipes</h2>
+        <p>We couldn&apos;t load recipes right now. Verify your database is running and `DATABASE_URL` is set.</p>
+      </section>
+    );
+  }
 }
