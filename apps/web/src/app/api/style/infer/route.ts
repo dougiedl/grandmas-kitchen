@@ -138,7 +138,7 @@ const CUISINE_SIGNAL_PATTERNS: Array<{ cuisine: string; pattern: RegExp; weight:
   { cuisine: "Mexican", pattern: /\bpozole\b/i, weight: 7, tag: "pozole" },
   { cuisine: "Mexican", pattern: /\bmexican\b/i, weight: 5, tag: "mexican" },
 
-  { cuisine: "Greek", pattern: /\byiayia\b/i, weight: 10, tag: "yiayia" },
+  { cuisine: "Greek", pattern: /\byiayia\b|\byiaya\b|\byaya\b/i, weight: 10, tag: "yiayia" },
   { cuisine: "Greek", pattern: /\bmoussaka\b/i, weight: 7, tag: "moussaka" },
   { cuisine: "Greek", pattern: /\bspanakopita\b/i, weight: 7, tag: "spanakopita" },
   { cuisine: "Greek", pattern: /\bgreek\b/i, weight: 5, tag: "greek" },
@@ -162,6 +162,7 @@ const CUISINE_SIGNAL_PATTERNS: Array<{ cuisine: string; pattern: RegExp; weight:
 
   { cuisine: "Japanese", pattern: /\bobaachan\b/i, weight: 9, tag: "obaachan" },
   { cuisine: "Japanese", pattern: /\bjapanese\b/i, weight: 5, tag: "japanese" },
+  { cuisine: "Japanese", pattern: /\bkansai\b|\bdashi\b|\bnikujaga\b/i, weight: 8, tag: "japanese-signature" },
 
   { cuisine: "Jamaican", pattern: /\bjerk\b/i, weight: 7, tag: "jerk" },
   { cuisine: "Jamaican", pattern: /\bjamaican\b/i, weight: 5, tag: "jamaican" },
