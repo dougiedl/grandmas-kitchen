@@ -62,6 +62,80 @@ type RegionalOverride = {
   tag: string;
 };
 
+const CUISINE_SIGNAL_PATTERNS: Array<{ cuisine: string; pattern: RegExp; weight: number; tag: string }> = [
+  { cuisine: "Italian", pattern: /\bnonna\b/i, weight: 10, tag: "nonna" },
+  { cuisine: "Italian", pattern: /\bnonno\b/i, weight: 8, tag: "nonno" },
+  { cuisine: "Italian", pattern: /\bitalian\b/i, weight: 5, tag: "italian" },
+  { cuisine: "Italian", pattern: /\bragu\b/i, weight: 5, tag: "ragu" },
+  { cuisine: "Italian", pattern: /\bpa?sta\b/i, weight: 4, tag: "pasta" },
+
+  { cuisine: "Spanish", pattern: /\babuela\b/i, weight: 9, tag: "abuela" },
+  { cuisine: "Spanish", pattern: /\bpaella\b/i, weight: 10, tag: "paella" },
+  { cuisine: "Spanish", pattern: /\bspanish\b/i, weight: 5, tag: "spanish" },
+
+  { cuisine: "Mexican", pattern: /\babuelita\b/i, weight: 10, tag: "abuelita" },
+  { cuisine: "Mexican", pattern: /\bmole\b/i, weight: 7, tag: "mole" },
+  { cuisine: "Mexican", pattern: /\bpozole\b/i, weight: 7, tag: "pozole" },
+  { cuisine: "Mexican", pattern: /\bmexican\b/i, weight: 5, tag: "mexican" },
+
+  { cuisine: "Greek", pattern: /\byiayia\b/i, weight: 10, tag: "yiayia" },
+  { cuisine: "Greek", pattern: /\bmoussaka\b/i, weight: 7, tag: "moussaka" },
+  { cuisine: "Greek", pattern: /\bspanakopita\b/i, weight: 7, tag: "spanakopita" },
+  { cuisine: "Greek", pattern: /\bgreek\b/i, weight: 5, tag: "greek" },
+
+  { cuisine: "French", pattern: /\bmamie\b/i, weight: 9, tag: "mamie" },
+  { cuisine: "French", pattern: /\bcoq au vin\b/i, weight: 8, tag: "coq-au-vin" },
+  { cuisine: "French", pattern: /\bfrench\b/i, weight: 5, tag: "french" },
+
+  { cuisine: "Lebanese", pattern: /\bteta\b/i, weight: 9, tag: "teta" },
+  { cuisine: "Lebanese", pattern: /\blebanese\b/i, weight: 5, tag: "lebanese" },
+
+  { cuisine: "Persian", pattern: /\bmaman\b/i, weight: 8, tag: "maman" },
+  { cuisine: "Persian", pattern: /\bpersian\b/i, weight: 5, tag: "persian" },
+
+  { cuisine: "Chinese", pattern: /\bnai nai\b/i, weight: 9, tag: "nai-nai" },
+  { cuisine: "Chinese", pattern: /\bcantonese\b/i, weight: 8, tag: "cantonese" },
+  { cuisine: "Chinese", pattern: /\bchinese\b/i, weight: 5, tag: "chinese" },
+
+  { cuisine: "Indian", pattern: /\bdadi\b/i, weight: 9, tag: "dadi" },
+  { cuisine: "Indian", pattern: /\bindian\b/i, weight: 5, tag: "indian" },
+
+  { cuisine: "Japanese", pattern: /\bobaachan\b/i, weight: 9, tag: "obaachan" },
+  { cuisine: "Japanese", pattern: /\bjapanese\b/i, weight: 5, tag: "japanese" },
+
+  { cuisine: "Jamaican", pattern: /\bjerk\b/i, weight: 7, tag: "jerk" },
+  { cuisine: "Jamaican", pattern: /\bjamaican\b/i, weight: 5, tag: "jamaican" },
+];
+
+function detectCuisineSignal(text: string): {
+  cuisine: string | null;
+  scoreLead: number;
+  tags: string[];
+} {
+  const scores = new Map<string, number>();
+  const tags: string[] = [];
+
+  for (const signal of CUISINE_SIGNAL_PATTERNS) {
+    if (signal.pattern.test(text)) {
+      scores.set(signal.cuisine, (scores.get(signal.cuisine) ?? 0) + signal.weight);
+      tags.push(signal.tag);
+    }
+  }
+
+  if (scores.size === 0) {
+    return { cuisine: null, scoreLead: 0, tags: [] };
+  }
+
+  const ranked = [...scores.entries()].sort((a, b) => b[1] - a[1]);
+  const lead = ranked[0][1] - (ranked[1]?.[1] ?? 0);
+
+  return {
+    cuisine: ranked[0][0],
+    scoreLead: lead,
+    tags: [...new Set(tags)],
+  };
+}
+
 function detectRegionalOverride(text: string): RegionalOverride | null {
   if (/\b(neapolitan|napoli|naples)\b/i.test(text)) {
     return { cuisine: "Italian", regionHints: ["neapolitan", "napoli", "naples"], tag: "neapolitan" };
@@ -132,6 +206,7 @@ export async function POST(request: NextRequest) {
   const text = normalizeText(message);
   const tokens = tokenize(text);
   const regionalOverride = detectRegionalOverride(text);
+  const cuisineSignal = detectCuisineSignal(text);
 
   let preferenceRows: Array<{ style_id: string; weight: string }> = [];
   try {
@@ -216,6 +291,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (cuisineSignal.cuisine) {
+      const strongSignal = cuisineSignal.scoreLead >= 3;
+      if (style.cuisine === cuisineSignal.cuisine) {
+        score += strongSignal ? 12 : 7;
+        tags.add("cuisine-signal");
+      } else {
+        score -= strongSignal ? 10 : 4;
+      }
+    }
+
     if (body.currentStyleId && body.currentStyleId === style.id) {
       score += 0.5;
       tags.add("current-style-context");
@@ -288,6 +373,7 @@ export async function POST(request: NextRequest) {
     });
 
   const reasoningTags = [...top.tags].slice(0, 8);
+  const mergedReasoningTags = [...new Set([...cuisineSignal.tags, ...reasoningTags])].slice(0, 8);
 
   await pool.query(
     `
@@ -305,7 +391,7 @@ export async function POST(request: NextRequest) {
       Number(primaryConfidence.toFixed(2)),
       JSON.stringify({
         alternatives: alternatives.map((item) => ({ id: item.id, confidence: item.confidence })),
-        reasoningTags,
+        reasoningTags: mergedReasoningTags,
         currentStyleId: body.currentStyleId ?? null,
       }),
     ],
@@ -320,6 +406,6 @@ export async function POST(request: NextRequest) {
       confidence: Number(primaryConfidence.toFixed(2)),
     },
     alternatives,
-    reasoningTags,
+    reasoningTags: mergedReasoningTags,
   });
 }
