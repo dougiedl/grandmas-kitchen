@@ -96,6 +96,12 @@ const STOP_TOKENS = new Set([
   "have",
   "into",
   "about",
+  "sunday",
+  "dinner",
+  "wintery",
+  "winter",
+  "family",
+  "home",
 ]);
 
 function toWordSet(value: string): Set<string> {
@@ -117,6 +123,9 @@ const CUISINE_SIGNAL_PATTERNS: Array<{ cuisine: string; pattern: RegExp; weight:
   { cuisine: "Italian", pattern: /\bnonna\b/i, weight: 10, tag: "nonna" },
   { cuisine: "Italian", pattern: /\bnonno\b/i, weight: 8, tag: "nonno" },
   { cuisine: "Italian", pattern: /\bitalian\b/i, weight: 5, tag: "italian" },
+  { cuisine: "Italian", pattern: /\b(sicilian|siclian)-?american\b/i, weight: 14, tag: "sicilian-american" },
+  { cuisine: "Italian", pattern: /\b(sicilian|siclian)\b/i, weight: 10, tag: "sicilian" },
+  { cuisine: "Italian", pattern: /\bitalian-?american\b/i, weight: 12, tag: "italian-american" },
   { cuisine: "Italian", pattern: /\bragu\b/i, weight: 5, tag: "ragu" },
   { cuisine: "Italian", pattern: /\bpa?sta\b/i, weight: 4, tag: "pasta" },
 
@@ -216,8 +225,11 @@ function detectRegionalOverride(text: string): RegionalOverride | null {
   if (/\b(neapolitan|napoli|naples)\b/i.test(text)) {
     return { cuisine: "Italian", regionHints: ["neapolitan", "napoli", "naples"], tag: "neapolitan" };
   }
-  if (/\b(sicilian|sicily)\b/i.test(text)) {
-    return { cuisine: "Italian", regionHints: ["sicilian", "sicily"], tag: "sicilian" };
+  if (/\b(sicilian|siclian)-?american\b/i.test(text)) {
+    return { cuisine: "Italian", regionHints: ["sicilian-american", "siclian-american", "new york red sauce"], tag: "sicilian-american" };
+  }
+  if (/\b(sicilian|siclian|sicily)\b/i.test(text)) {
+    return { cuisine: "Italian", regionHints: ["sicilian", "siclian", "sicily"], tag: "sicilian" };
   }
   if (/\b(oaxacan|oaxaca)\b/i.test(text)) {
     return { cuisine: "Mexican", regionHints: ["oaxacan", "oaxaca"], tag: "oaxacan" };
