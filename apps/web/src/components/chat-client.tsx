@@ -57,6 +57,21 @@ type SuggestedFix = {
   regenerationStyle?: RegenerationStyle;
 };
 
+type InferredStyle = {
+  id: string;
+  label: string;
+  cuisine: string;
+  region: string | null;
+  confidence: number;
+};
+
+type StyleInferenceResult = {
+  primaryStyle: InferredStyle;
+  alternatives: InferredStyle[];
+  reasoningTags: string[];
+  originalMessage: string;
+};
+
 export function ChatClient({
   initialPersonaId,
   initialThreadId,
@@ -72,6 +87,8 @@ export function ChatClient({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [styleInference, setStyleInference] = useState<StyleInferenceResult | null>(null);
+  const [showStyleAlternatives, setShowStyleAlternatives] = useState(false);
   const startThreadInFlightRef = useRef(false);
   const chatWindowRef = useRef<HTMLDivElement | null>(null);
   const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -327,6 +344,132 @@ export function ChatClient({
     return threads.find((thread) => thread.persona_id)?.persona_id ?? "nonna-rosa";
   }
 
+  function inferPersonaIdFromCuisine(cuisine: string): string {
+    const matched = LAUNCH_PERSONAS.find(
+      (personaOption) => personaOption.cuisine.toLowerCase() === cuisine.toLowerCase(),
+    );
+    if (matched) {
+      return matched.id;
+    }
+
+    return inferPersonaIdFromInput(cuisine);
+  }
+
+  async function startThreadAndSendMessage(params: {
+    content: string;
+    personaId: string;
+    styleSelection?: {
+      selectedStyleId: string;
+      inferredStyleId?: string;
+      confidence?: number;
+      reasoningTags?: string[];
+    };
+  }) {
+    const { content, personaId, styleSelection } = params;
+
+    const response = await fetch("/api/chat/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personaId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await toApiError(response, "Unable to start chat thread"));
+    }
+
+    const data = (await response.json()) as { threadId: string };
+    setThreadId(data.threadId);
+    setActivePersonaId(personaId);
+    router.replace(`/chat?persona=${personaId}&thread=${data.threadId}`);
+    await refreshThreads();
+
+    if (styleSelection) {
+      const confirmResponse = await fetch("/api/style/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          threadId: data.threadId,
+          selectedStyleId: styleSelection.selectedStyleId,
+          inferredStyleId: styleSelection.inferredStyleId ?? styleSelection.selectedStyleId,
+          confidence: styleSelection.confidence ?? null,
+          reasoningTags: styleSelection.reasoningTags ?? [],
+          accepted: true,
+        }),
+      });
+
+      if (!confirmResponse.ok) {
+        throw new Error(await toApiError(confirmResponse, "Unable to confirm cooking style"));
+      }
+    }
+
+    const messageResponse = await fetch(`/api/chat/${data.threadId}/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+
+    if (!messageResponse.ok) {
+      throw new Error(await toApiError(messageResponse, "Unable to send message"));
+    }
+
+    const messageData = (await messageResponse.json()) as {
+      userMessage: Message | null;
+      assistantMessage: Message;
+      recipeId?: string;
+    };
+
+    setMessages((current) =>
+      messageData.userMessage
+        ? [...current, messageData.userMessage, messageData.assistantMessage]
+        : [...current, messageData.assistantMessage],
+    );
+    setInput("");
+    setSuggestedFix(null);
+    setStyleInference(null);
+    setShowStyleAlternatives(false);
+
+    await trackEvent("chat_thread_auto_inferred_and_started", {
+      personaId,
+      threadId: data.threadId,
+      inferredStyleId: styleSelection?.inferredStyleId ?? null,
+      selectedStyleId: styleSelection?.selectedStyleId ?? null,
+    });
+    await refreshThreads();
+  }
+
+  async function handleStyleSelection(style: InferredStyle) {
+    if (!styleInference) {
+      return;
+    }
+
+    const personaId = inferPersonaIdFromCuisine(style.cuisine);
+    setIsLoading(true);
+    setError(null);
+    try {
+      await startThreadAndSendMessage({
+        content: styleInference.originalMessage,
+        personaId,
+        styleSelection: {
+          selectedStyleId: style.id,
+          inferredStyleId: styleInference.primaryStyle.id,
+          confidence: style.confidence,
+          reasoningTags: styleInference.reasoningTags,
+        },
+      });
+
+      await trackEvent("chat_style_selected", {
+        source: "inference_prompt",
+        selectedStyleId: style.id,
+        inferredStyleId: styleInference.primaryStyle.id,
+        confidence: style.confidence,
+      });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to apply inferred style");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function onSendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -336,55 +479,56 @@ export function ChatClient({
     }
 
     if (!threadId) {
+      if (!activePersonaId) {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const inferResponse = await fetch("/api/style/infer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              threadId: null,
+              message: content,
+              currentStyleId: null,
+            }),
+          });
+
+          if (!inferResponse.ok) {
+            throw new Error(await toApiError(inferResponse, "Unable to infer cooking style"));
+          }
+
+          const inferData = (await inferResponse.json()) as {
+            primaryStyle: InferredStyle;
+            alternatives: InferredStyle[];
+            reasoningTags: string[];
+          };
+
+          setStyleInference({
+            primaryStyle: inferData.primaryStyle,
+            alternatives: inferData.alternatives,
+            reasoningTags: inferData.reasoningTags,
+            originalMessage: content,
+          });
+          setShowStyleAlternatives(false);
+
+          await trackEvent("chat_style_inference_shown", {
+            primaryStyleId: inferData.primaryStyle.id,
+            confidence: inferData.primaryStyle.confidence,
+          });
+          return;
+        } catch (cause) {
+          setError(cause instanceof Error ? cause.message : "Unable to infer style, using default flow");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
       const personaId = activePersonaId ?? inferPersonaIdFromInput(content);
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch("/api/chat/start", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ personaId }),
-        });
-
-        if (!response.ok) {
-          throw new Error(await toApiError(response, "Unable to start chat thread"));
-        }
-
-        const data = (await response.json()) as { threadId: string };
-        setThreadId(data.threadId);
-        setActivePersonaId(personaId);
-        router.replace(`/chat?persona=${personaId}&thread=${data.threadId}`);
-        await refreshThreads();
-
-        const messageResponse = await fetch(`/api/chat/${data.threadId}/message`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
-        });
-
-        if (!messageResponse.ok) {
-          throw new Error(await toApiError(messageResponse, "Unable to send message"));
-        }
-
-        const messageData = (await messageResponse.json()) as {
-          userMessage: Message | null;
-          assistantMessage: Message;
-          recipeId?: string;
-        };
-
-        setMessages((current) =>
-          messageData.userMessage
-            ? [...current, messageData.userMessage, messageData.assistantMessage]
-            : [...current, messageData.assistantMessage],
-        );
-        setInput("");
-        setSuggestedFix(null);
-        await trackEvent("chat_thread_auto_inferred_and_started", {
-          personaId,
-          threadId: data.threadId,
-        });
-        await refreshThreads();
+        await startThreadAndSendMessage({ content, personaId });
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : "Unable to start your chat");
       } finally {
@@ -590,6 +734,52 @@ export function ChatClient({
           </div>
         ) : null}
         {error ? <p className="error-text">{error}</p> : null}
+
+        {styleInference && !threadId ? (
+          <section className="style-inference-panel">
+            <p className="section-kicker">Style suggestion</p>
+            <h4>
+              {styleInference.primaryStyle.label} ({styleInference.primaryStyle.cuisine})
+            </h4>
+            <p>
+              Confidence: {Math.round(styleInference.primaryStyle.confidence * 100)}%
+              {styleInference.primaryStyle.region ? ` • ${styleInference.primaryStyle.region}` : ""}
+            </p>
+            {styleInference.reasoningTags.length > 0 ? (
+              <p className="style-inference-reason">
+                Why this style: {styleInference.reasoningTags.join(", ")}
+              </p>
+            ) : null}
+            <div className="style-inference-actions">
+              <button
+                type="button"
+                onClick={() => handleStyleSelection(styleInference.primaryStyle)}
+                disabled={isLoading}
+              >
+                Use This Style
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowStyleAlternatives((current) => !current)}
+                disabled={isLoading || styleInference.alternatives.length === 0}
+              >
+                {showStyleAlternatives ? "Hide Options" : "Show Options"}
+              </button>
+              <button type="button" onClick={() => setStyleInference(null)} disabled={isLoading}>
+                Decide Later
+              </button>
+            </div>
+            {showStyleAlternatives ? (
+              <div className="style-inference-options">
+                {styleInference.alternatives.map((style) => (
+                  <button key={style.id} type="button" onClick={() => handleStyleSelection(style)} disabled={isLoading}>
+                    {style.label} ({Math.round(style.confidence * 100)}%)
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         <div className="chat-window" ref={chatWindowRef}>
           {messages.map((message) => (

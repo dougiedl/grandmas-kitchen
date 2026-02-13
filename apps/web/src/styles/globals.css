@@ -530,6 +530,47 @@ a:hover {
   margin: 0 0 0.45rem;
 }
 
+.style-inference-panel {
+  background: linear-gradient(155deg, rgba(255, 249, 240, 0.92), rgba(243, 229, 210, 0.9));
+  border: 1px solid rgba(188, 123, 67, 0.55);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 0.7rem;
+  padding: 0.72rem 0.8rem;
+}
+
+.style-inference-panel h4 {
+  margin: 0.15rem 0 0.25rem;
+}
+
+.style-inference-panel p {
+  margin: 0.2rem 0;
+}
+
+.style-inference-reason {
+  color: var(--ink-700);
+  font-size: 0.92rem;
+}
+
+.style-inference-actions,
+.style-inference-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.style-inference-actions button,
+.style-inference-options button {
+  background: linear-gradient(145deg, #f2d8b7, #e8c09a);
+  border: 1px solid rgba(160, 91, 45, 0.62);
+  border-radius: var(--radius-pill);
+  color: #4f2f1f;
+  cursor: pointer;
+  min-height: 38px;
+  padding: 0.34rem 0.72rem;
+}
+
 .msg {
   padding: 0.62rem 0.78rem;
 }
