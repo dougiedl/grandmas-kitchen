@@ -40,6 +40,13 @@ type ThreadPayload = {
   thread: {
     id: string;
     persona_id: string | null;
+    selected_style_id?: string | null;
+    inferred_style_id?: string | null;
+    style_confidence?: number | string | null;
+    style_reasoning_tags?: string[] | null;
+    selected_style_label?: string | null;
+    selected_style_cuisine?: string | null;
+    selected_style_region?: string | null;
   };
   messages: Message[];
 };
@@ -72,6 +79,14 @@ type StyleInferenceResult = {
   originalMessage: string;
 };
 
+type StyleSearchResult = {
+  id: string;
+  label: string;
+  cuisine: string;
+  region: string | null;
+  aliases?: string[];
+};
+
 export function ChatClient({
   initialPersonaId,
   initialThreadId,
@@ -89,6 +104,11 @@ export function ChatClient({
   const [error, setError] = useState<string | null>(null);
   const [styleInference, setStyleInference] = useState<StyleInferenceResult | null>(null);
   const [showStyleAlternatives, setShowStyleAlternatives] = useState(false);
+  const [activeStyle, setActiveStyle] = useState<InferredStyle | null>(null);
+  const [showStyleSwitcher, setShowStyleSwitcher] = useState(false);
+  const [styleSearchQuery, setStyleSearchQuery] = useState("");
+  const [styleSearchResults, setStyleSearchResults] = useState<StyleSearchResult[]>([]);
+  const [styleSwitchLoading, setStyleSwitchLoading] = useState(false);
   const startThreadInFlightRef = useRef(false);
   const chatWindowRef = useRef<HTMLDivElement | null>(null);
   const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -233,6 +253,25 @@ export function ChatClient({
         } else {
           router.replace(`/chat?thread=${threadId}`);
         }
+
+        if (data.thread.selected_style_id && data.thread.selected_style_label && data.thread.selected_style_cuisine) {
+          const rawConfidence = data.thread.style_confidence;
+          const parsedConfidence =
+            typeof rawConfidence === "number"
+              ? rawConfidence
+              : typeof rawConfidence === "string"
+                ? Number.parseFloat(rawConfidence)
+                : Number.NaN;
+          setActiveStyle({
+            id: data.thread.selected_style_id,
+            label: data.thread.selected_style_label,
+            cuisine: data.thread.selected_style_cuisine,
+            region: data.thread.selected_style_region ?? null,
+            confidence: Number.isFinite(parsedConfidence) ? parsedConfidence : 0.5,
+          });
+        } else {
+          setActiveStyle(null);
+        }
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : "Unable to load this conversation");
       }
@@ -259,6 +298,37 @@ export function ChatClient({
     const nextHeight = Math.min(textarea.scrollHeight, 280);
     textarea.style.height = `${nextHeight}px`;
   }, [input]);
+
+  useEffect(() => {
+    async function searchStyles() {
+      if (!showStyleSwitcher || !threadId) {
+        return;
+      }
+
+      try {
+        const query = styleSearchQuery.trim();
+        const searchParams = new URLSearchParams();
+        searchParams.set("limit", "12");
+        if (query) {
+          searchParams.set("q", query);
+        } else if (activeStyle?.cuisine) {
+          searchParams.set("cuisine", activeStyle.cuisine);
+        }
+
+        const response = await fetch(`/api/styles/search?${searchParams.toString()}`, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(await toApiError(response, "Unable to load styles"));
+        }
+
+        const data = (await response.json()) as { styles: StyleSearchResult[] };
+        setStyleSearchResults(data.styles);
+      } catch {
+        setStyleSearchResults([]);
+      }
+    }
+
+    void searchStyles();
+  }, [activeStyle?.cuisine, showStyleSwitcher, styleSearchQuery, threadId]);
 
   async function sendMessage(payload: SendMessagePayload) {
     if (!threadId) {
@@ -363,6 +433,11 @@ export function ChatClient({
       inferredStyleId?: string;
       confidence?: number;
       reasoningTags?: string[];
+      selectedStyle?: {
+        label: string;
+        cuisine: string;
+        region?: string | null;
+      };
     };
   }) {
     const { content, personaId, styleSelection } = params;
@@ -427,6 +502,15 @@ export function ChatClient({
     setSuggestedFix(null);
     setStyleInference(null);
     setShowStyleAlternatives(false);
+    if (styleSelection) {
+      setActiveStyle({
+        id: styleSelection.selectedStyleId,
+        label: styleSelection.selectedStyle?.label ?? "Selected Style",
+        cuisine: styleSelection.selectedStyle?.cuisine ?? "Home Style",
+        region: styleSelection.selectedStyle?.region ?? null,
+        confidence: styleSelection.confidence ?? 0.5,
+      });
+    }
 
     await trackEvent("chat_thread_auto_inferred_and_started", {
       personaId,
@@ -454,6 +538,11 @@ export function ChatClient({
           inferredStyleId: styleInference.primaryStyle.id,
           confidence: style.confidence,
           reasoningTags: styleInference.reasoningTags,
+          selectedStyle: {
+            label: style.label,
+            cuisine: style.cuisine,
+            region: style.region,
+          },
         },
       });
 
@@ -467,6 +556,50 @@ export function ChatClient({
       setError(cause instanceof Error ? cause.message : "Unable to apply inferred style");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleThreadStyleSwitch(style: StyleSearchResult) {
+    if (!threadId) {
+      return;
+    }
+
+    setStyleSwitchLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/style/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          threadId,
+          selectedStyleId: style.id,
+          inferredStyleId: activeStyle?.id ?? style.id,
+          confidence: activeStyle?.confidence ?? null,
+          reasoningTags: [],
+          accepted: true,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(await toApiError(response, "Unable to switch style"));
+      }
+
+      setActiveStyle({
+        id: style.id,
+        label: style.label,
+        cuisine: style.cuisine,
+        region: style.region,
+        confidence: activeStyle?.confidence ?? 0.55,
+      });
+      setShowStyleSwitcher(false);
+      await trackEvent("chat_style_switched", {
+        threadId,
+        selectedStyleId: style.id,
+        cuisine: style.cuisine,
+      });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to switch style");
+    } finally {
+      setStyleSwitchLoading(false);
     }
   }
 
@@ -575,6 +708,10 @@ export function ChatClient({
   function onResumeThread(thread: ThreadSummary) {
     setThreadId(thread.id);
     setActivePersonaId(thread.persona_id);
+    setStyleInference(null);
+    setShowStyleSwitcher(false);
+    setStyleSearchQuery("");
+    setStyleSearchResults([]);
     setMessages([]);
     router.replace(
       thread.persona_id ? `/chat?persona=${thread.persona_id}&thread=${thread.id}` : `/chat?thread=${thread.id}`,
@@ -732,6 +869,57 @@ export function ChatClient({
               ))}
             </div>
           </div>
+        ) : null}
+
+        {threadId ? (
+          <section className="style-bar">
+            <div>
+              <strong>Cooking as:</strong>{" "}
+              {activeStyle ? (
+                <>
+                  {activeStyle.label}
+                  {activeStyle.region ? ` • ${activeStyle.region}` : ""}
+                </>
+              ) : (
+                "Unspecified style"
+              )}
+            </div>
+            <div className="style-bar-actions">
+              <button
+                type="button"
+                onClick={() => setShowStyleSwitcher((current) => !current)}
+                disabled={isLoading || styleSwitchLoading}
+              >
+                {showStyleSwitcher ? "Close" : "Change"}
+              </button>
+            </div>
+          </section>
+        ) : null}
+
+        {threadId && showStyleSwitcher ? (
+          <section className="style-switcher-panel">
+            <label htmlFor="style-search-input">Search style</label>
+            <input
+              id="style-search-input"
+              type="text"
+              value={styleSearchQuery}
+              onChange={(event) => setStyleSearchQuery(event.target.value)}
+              placeholder="e.g. Sicilian, Oaxacan, Punjabi, Kansai"
+            />
+            <div className="style-switcher-results">
+              {styleSearchResults.map((style) => (
+                <button
+                  key={style.id}
+                  type="button"
+                  onClick={() => handleThreadStyleSwitch(style)}
+                  disabled={styleSwitchLoading}
+                >
+                  {style.label} ({style.cuisine})
+                </button>
+              ))}
+              {styleSearchResults.length === 0 ? <p>No matching styles yet.</p> : null}
+            </div>
+          </section>
         ) : null}
         {error ? <p className="error-text">{error}</p> : null}
 

@@ -18,10 +18,23 @@ export async function GET(
 
   const threadResult = await pool.query(
     `
-      select t.id, t.persona_id, p.name as persona_name, p.cuisine
+      select
+        t.id,
+        t.persona_id,
+        p.name as persona_name,
+        p.cuisine,
+        tss.selected_style_id,
+        tss.inferred_style_id,
+        tss.confidence as style_confidence,
+        tss.reasoning_tags as style_reasoning_tags,
+        sc.label as selected_style_label,
+        sc.cuisine as selected_style_cuisine,
+        sc.region as selected_style_region
       from conversation_threads t
       join users u on u.id = t.user_id
       left join grandma_personas p on p.id = t.persona_id
+      left join thread_style_state tss on tss.thread_id = t.id
+      left join style_catalog sc on sc.id = tss.selected_style_id
       where t.id = $1 and u.email = $2
       limit 1
     `,
