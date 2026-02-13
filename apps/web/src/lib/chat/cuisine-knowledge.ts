@@ -86,6 +86,10 @@ function normalizeCuisine(cuisine: string): string {
   if (lower.includes("french")) return "French";
   if (lower.includes("leban")) return "Lebanese";
   if (lower.includes("pers")) return "Persian";
+  if (lower.includes("chin")) return "Chinese";
+  if (lower.includes("ind")) return "Indian";
+  if (lower.includes("japan")) return "Japanese";
+  if (lower.includes("jama")) return "Jamaican";
   return "Home Style";
 }
 

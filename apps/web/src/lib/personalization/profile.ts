@@ -35,6 +35,12 @@ const SIGNAL_RULES: SignalRule[] = [
   { key: "lb_beirut", label: "Beirut-Style", cuisine: "Lebanese", confidence: 0.8, patterns: [/\bbeirut\b/i] },
   { key: "ir_tehrani", label: "Tehrani", cuisine: "Persian", confidence: 0.75, patterns: [/\btehran\b/i, /\btehrani\b/i] },
   { key: "ir_shirazi", label: "Shirazi", cuisine: "Persian", confidence: 0.8, patterns: [/\bshiraz\b/i, /\bshirazi\b/i] },
+  { key: "cn_sichuan", label: "Sichuan", cuisine: "Chinese", confidence: 0.9, patterns: [/\bsichuan\b/i, /\bszechuan\b/i, /\bchengdu\b/i] },
+  { key: "cn_cantonese", label: "Cantonese", cuisine: "Chinese", confidence: 0.85, patterns: [/\bcantonese\b/i, /\bguangdong\b/i] },
+  { key: "in_punjabi", label: "Punjabi", cuisine: "Indian", confidence: 0.85, patterns: [/\bpunjabi\b/i, /\bpunjab\b/i] },
+  { key: "in_south_indian", label: "South Indian", cuisine: "Indian", confidence: 0.85, patterns: [/\bsouth indian\b/i, /\bkerala\b/i, /\btamil\b/i] },
+  { key: "jp_kansai", label: "Kansai", cuisine: "Japanese", confidence: 0.8, patterns: [/\bkansai\b/i, /\bosaka\b/i, /\bkyoto\b/i] },
+  { key: "jm_jerk_house", label: "Jerk-House Style", cuisine: "Jamaican", confidence: 0.85, patterns: [/\bjerk\b/i, /\bscotch bonnet\b/i] },
 ];
 
 function normalizeCuisine(cuisine: string): string {
@@ -46,6 +52,10 @@ function normalizeCuisine(cuisine: string): string {
   if (lower.includes("french")) return "French";
   if (lower.includes("leban")) return "Lebanese";
   if (lower.includes("pers")) return "Persian";
+  if (lower.includes("chin")) return "Chinese";
+  if (lower.includes("ind")) return "Indian";
+  if (lower.includes("japan")) return "Japanese";
+  if (lower.includes("jama")) return "Jamaican";
   return cuisine;
 }
 

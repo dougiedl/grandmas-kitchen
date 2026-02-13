@@ -1,0 +1,53 @@
+{
+  "baseStyle": "Warm nostalgic illustrated 2D cartoon background scene, richly detailed, cozy lived-in family kitchen, soft sunlight, gentle film grain, no text, no logos, no watermarks, no signatures, no people, no characters, no faces, center area visually calmer for UI readability, cinematic composition, 16:9 framing.",
+  "cuisines": [
+    {
+      "id": "home",
+      "prompt": "Classic immigrant-family American home kitchen with warm wood cabinets, patterned tablecloth, framed family photos, simmering pot on stove, vintage utensils, cozy and welcoming."
+    },
+    {
+      "id": "italian",
+      "prompt": "Italian-American home kitchen inspired by Sunday gravy traditions: checkered tablecloth, drying pasta tools, garlic braids, tomato sauce simmering cookware, old family photo wall, warm terracotta accents."
+    },
+    {
+      "id": "mexican",
+      "prompt": "Mexican family kitchen with hand-painted tile details, molcajete and comal, dried chiles, clay cookware, colorful but earthy tones, homestyle and heritage-driven atmosphere."
+    },
+    {
+      "id": "greek",
+      "prompt": "Greek family kitchen with white-and-blue tile accents, olive oil bottles, herb bundles, lemon bowl, rustic wood table, bright Mediterranean morning light and sea-breeze feeling."
+    },
+    {
+      "id": "spanish",
+      "prompt": "Spanish home kitchen with saffron and paprika jars, paella pan on hanging rack, stone and wood textures, warm amber evening glow, rustic comfort and multigenerational warmth."
+    },
+    {
+      "id": "french",
+      "prompt": "French countryside-inspired family kitchen with copper pots, butter-yellow walls, linen curtains, herb bouquets, enamel cookware, elegant but lived-in and cozy."
+    },
+    {
+      "id": "lebanese",
+      "prompt": "Lebanese home kitchen with mezze servingware, olive wood details, arched window light, copper and ceramic accents, herbs and citrus on counter, deeply hospitable ambiance."
+    },
+    {
+      "id": "persian",
+      "prompt": "Persian family kitchen with saffron and dried lime jars, patterned textiles, samovar and rice pot details, turquoise and warm copper palette, nostalgic celebratory home atmosphere."
+    },
+    {
+      "id": "chinese",
+      "prompt": "Chinese family kitchen with wok station, bamboo steamers, soy and black vinegar pantry shelf, cleaver block, warm lantern-toned accents, nostalgic family comfort feeling."
+    },
+    {
+      "id": "indian",
+      "prompt": "Indian family kitchen with spice dabba, tawa and kadhai cookware, steel canisters, curry leaves and coriander on the counter, warm golden home-cooking atmosphere."
+    },
+    {
+      "id": "japanese",
+      "prompt": "Japanese home kitchen with donabe and miso essentials, wooden utensils, simple ceramic bowls, neat seasonal ingredients, calm and nostalgic family dinner mood."
+    },
+    {
+      "id": "jamaican",
+      "prompt": "Jamaican family kitchen with allspice and thyme jars, Dutch pot on stove, colorful enamel cookware, fresh scallion and Scotch bonnet accents, vibrant but homey island warmth."
+    }
+  ]
+}

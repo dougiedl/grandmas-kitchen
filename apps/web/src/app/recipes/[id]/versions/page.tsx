@@ -15,6 +15,22 @@ type VersionRecord = {
   } | null;
 };
 
+function cuisineThemeClass(cuisine: string | null): string {
+  const text = (cuisine ?? "").toLowerCase();
+  if (text.includes("ital")) return "kitchen-theme-italian";
+  if (text.includes("mex")) return "kitchen-theme-mexican";
+  if (text.includes("greek")) return "kitchen-theme-greek";
+  if (text.includes("span")) return "kitchen-theme-spanish";
+  if (text.includes("french")) return "kitchen-theme-french";
+  if (text.includes("leban")) return "kitchen-theme-lebanese";
+  if (text.includes("pers")) return "kitchen-theme-persian";
+  if (text.includes("chin")) return "kitchen-theme-chinese";
+  if (text.includes("ind")) return "kitchen-theme-indian";
+  if (text.includes("japan")) return "kitchen-theme-japanese";
+  if (text.includes("jama")) return "kitchen-theme-jamaican";
+  return "kitchen-theme-home";
+}
+
 function summarizeDiff(current: VersionRecord, previous?: VersionRecord): string {
   if (!previous) {
     return "Initial captured version";
@@ -62,9 +78,10 @@ export default async function RecipeVersionsPage({
     user_id: string;
     thread_id: string | null;
     title: string;
+    cuisine: string | null;
   }>(
     `
-      select r.id, r.user_id, r.thread_id, r.title
+      select r.id, r.user_id, r.thread_id, r.title, r.cuisine
       from recipes r
       join users u on u.id = r.user_id
       where r.id = $1 and u.email = $2
@@ -100,7 +117,7 @@ export default async function RecipeVersionsPage({
   const versions = versionsResult.rows;
 
   return (
-    <section>
+    <section className={`kitchen-theme ${cuisineThemeClass(source.cuisine)}`}>
       <p>
         <Link href={`/recipes/${source.id}`}>Back to Recipe</Link>
       </p>

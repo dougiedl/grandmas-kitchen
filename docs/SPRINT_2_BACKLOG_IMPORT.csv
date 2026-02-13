@@ -1,0 +1,13 @@
+Ticket ID,Title,Priority,Estimate (points),Owner,Dependencies,Description,Acceptance Tests
+GK-201,Style data model migration,P0,5,ENG,,Add schema for style catalog/thread style state/user style preferences/style inference events,"db:migrate succeeds; new tables/indexes exist; existing routes still function"
+GK-202,Style catalog seed v1,P0,3,ENG,GK-201,Seed initial style catalog with major cuisines + regional variants + aliases,"db:seed idempotent; active style count >= 30; alias search resolves expected styles"
+GK-203,Style inference API,P0,8,ENG,"GK-201|GK-202",Implement POST /api/style/infer from prompt + profile memory,"200 with contract payload; safe fallback on noisy input; 401 when unauthorized"
+GK-204,Style confirmation API and thread state,P0,5,ENG,"GK-201|GK-203",Implement POST /api/style/confirm and persist selected style per thread,"selected_style_id persists; invalid style returns 400; thread ownership enforced"
+GK-205,Style search API,P1,3,ENG,GK-202,Implement GET /api/styles/search for picker modal,"search by label/alias works; limit works; 401 when unauthorized"
+GK-206,Chat inference UI (chips + explainability),P0,8,ENG,"GK-203|GK-204",Add first-turn inference UI and confirmation chips in chat,"first message triggers inference UI; confirm updates style bar; no dead-end paths"
+GK-207,Style bar + switch flow,P0,5,ENG,"GK-204|GK-205",Add persistent style bar and in-thread style switching,"style switch updates thread state; subsequent generation reflects style; no thread reset needed"
+GK-208,Style picker modal,P1,5,ENG,GK-205,Build searchable grouped style picker modal with recent picks,"keyboard accessible; selecting style updates style bar; mobile layout works at 375px"
+GK-209,Generation pipeline wiring,P0,8,ENG,"GK-204|GK-206",Wire selected style into retrieval and generation context,"recipes reflect selected style; schema output remains valid; regen modes still pass"
+GK-210,Profile learning writes,P1,5,ENG,"GK-201|GK-204|GK-209",Persist style acceptance/rejection/manual-switch and bias future inference,"accept increases weight; reject lowers rank; returning users see adjusted suggestions"
+GK-211,Telemetry and admin reporting hooks,P1,5,ENG,"GK-203|GK-204|GK-210",Track inference quality/corrections and expose admin summary,"events logged for infer/confirm/change; admin snapshot renders without errors"
+GK-212,Sprint 2 QA gate and release note,P0,3,QA,All prior tickets,Run full regression and produce rollout recommendation,"lint/build pass; smoke checks documented; core style flow validated on desktop/mobile"

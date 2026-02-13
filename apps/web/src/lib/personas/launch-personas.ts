@@ -1,7 +1,18 @@
 export type LaunchPersona = {
   id: string;
   name: string;
-  cuisine: "Italian" | "Mexican" | "Greek" | "Spanish" | "French" | "Lebanese" | "Persian";
+  cuisine:
+    | "Italian"
+    | "Mexican"
+    | "Greek"
+    | "Spanish"
+    | "French"
+    | "Lebanese"
+    | "Persian"
+    | "Chinese"
+    | "Indian"
+    | "Japanese"
+    | "Jamaican";
   summary: string;
   signatures: string[];
 };
@@ -55,5 +66,33 @@ export const LAUNCH_PERSONAS: LaunchPersona[] = [
     cuisine: "Persian",
     summary: "Saffron rice, herbs, gentle sour notes, and deeply homey table traditions.",
     signatures: ["Ghormeh Sabzi", "Fesenjan", "Tahdig", "Adas Polo"],
+  },
+  {
+    id: "nai-nai-mei",
+    name: "Nai Nai Mei",
+    cuisine: "Chinese",
+    summary: "Wok hei comfort, ginger-scallion aromatics, and family table classics.",
+    signatures: ["Red-Braised Chicken", "Jiaozi", "Tomato Egg", "Scallion Noodles"],
+  },
+  {
+    id: "dadi-asha",
+    name: "Dadi Asha",
+    cuisine: "Indian",
+    summary: "Tempered spices, layered masala, and soulful everyday ghar ka khana.",
+    signatures: ["Dal Tadka", "Aloo Gobi", "Chicken Curry", "Jeera Rice"],
+  },
+  {
+    id: "obaachan-yumi",
+    name: "Obaachan Yumi",
+    cuisine: "Japanese",
+    summary: "Balanced umami, seasonal simplicity, and gentle home-style precision.",
+    signatures: ["Nikujaga", "Miso Soup", "Tamagoyaki", "Onigiri"],
+  },
+  {
+    id: "grandma-inez",
+    name: "Grandma Inez",
+    cuisine: "Jamaican",
+    summary: "Island warmth, allspice depth, and Sunday-pot comfort for the whole family.",
+    signatures: ["Brown Stew Chicken", "Rice and Peas", "Curry Goat", "Festival"],
   },
 ];

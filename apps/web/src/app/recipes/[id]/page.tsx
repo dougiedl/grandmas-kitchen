@@ -64,6 +64,10 @@ function cuisineThemeClass(cuisine: string | null): string {
   if (text.includes("french")) return "kitchen-theme-french";
   if (text.includes("leban")) return "kitchen-theme-lebanese";
   if (text.includes("pers")) return "kitchen-theme-persian";
+  if (text.includes("chin")) return "kitchen-theme-chinese";
+  if (text.includes("ind")) return "kitchen-theme-indian";
+  if (text.includes("japan")) return "kitchen-theme-japanese";
+  if (text.includes("jama")) return "kitchen-theme-jamaican";
   return "kitchen-theme-home";
 }
 

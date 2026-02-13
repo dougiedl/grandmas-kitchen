@@ -24,4 +24,11 @@ if [[ "$ANALYTICS_CODE" != "401" ]]; then
   exit 1
 fi
 
+echo "[smoke] Checking discovery trending without auth"
+DISCOVERY_CODE=$(curl -s -o /tmp/gk_discovery.json -w "%{http_code}" "$BASE_URL/api/discovery/trending")
+if [[ "$DISCOVERY_CODE" != "401" ]]; then
+  echo "[smoke] FAIL /api/discovery/trending expected 401 when unauthenticated got $DISCOVERY_CODE"
+  exit 1
+fi
+
 echo "[smoke] PASS"

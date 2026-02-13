@@ -340,6 +340,10 @@ function normalizeCuisineKey(cuisine: string): string {
   if (key.includes("french")) return "french";
   if (key.includes("leban")) return "lebanese";
   if (key.includes("pers")) return "persian";
+  if (key.includes("chin")) return "chinese";
+  if (key.includes("ind")) return "indian";
+  if (key.includes("japan")) return "japanese";
+  if (key.includes("jama")) return "jamaican";
   return key;
 }
 

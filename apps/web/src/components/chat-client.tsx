@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RegenerationStyle } from "@/lib/chat/recipe-schema";
+import { ChatCommunityDiscovery } from "@/components/chat-community-discovery";
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
 
 type Message = {
@@ -73,6 +74,7 @@ export function ChatClient({
   const [error, setError] = useState<string | null>(null);
   const startThreadInFlightRef = useRef(false);
   const chatWindowRef = useRef<HTMLDivElement | null>(null);
+  const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [suggestedFix, setSuggestedFix] = useState<SuggestedFix | null>(null);
 
   async function trackEvent(eventName: string, eventProps?: Record<string, unknown>) {
@@ -120,6 +122,10 @@ export function ChatClient({
     if (cuisine.includes("french")) return "kitchen-theme-french";
     if (cuisine.includes("leban")) return "kitchen-theme-lebanese";
     if (cuisine.includes("pers")) return "kitchen-theme-persian";
+    if (cuisine.includes("chin")) return "kitchen-theme-chinese";
+    if (cuisine.includes("ind")) return "kitchen-theme-indian";
+    if (cuisine.includes("japan")) return "kitchen-theme-japanese";
+    if (cuisine.includes("jama")) return "kitchen-theme-jamaican";
     return "kitchen-theme-home";
   }, [persona]);
   const starterPrompts = useMemo(() => {
@@ -226,6 +232,17 @@ export function ChatClient({
     node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    const textarea = composerTextareaRef.current;
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    const nextHeight = Math.min(textarea.scrollHeight, 280);
+    textarea.style.height = `${nextHeight}px`;
+  }, [input]);
+
   async function sendMessage(payload: SendMessagePayload) {
     if (!threadId) {
       return;
@@ -293,6 +310,18 @@ export function ChatClient({
     }
     if (text.includes("persian") || text.includes("tahdig") || text.includes("ghormeh") || text.includes("fesenjan")) {
       return "maman-parisa";
+    }
+    if (text.includes("chinese") || text.includes("nai nai") || text.includes("jiaozi") || text.includes("wok")) {
+      return "nai-nai-mei";
+    }
+    if (text.includes("indian") || text.includes("dadi") || text.includes("masala") || text.includes("dal")) {
+      return "dadi-asha";
+    }
+    if (text.includes("japanese") || text.includes("obaachan") || text.includes("miso") || text.includes("onigiri")) {
+      return "obaachan-yumi";
+    }
+    if (text.includes("jamaican") || text.includes("jerk") || text.includes("rice and peas") || text.includes("ackee")) {
+      return "grandma-inez";
     }
 
     return threads.find((thread) => thread.persona_id)?.persona_id ?? "nonna-rosa";
@@ -375,8 +404,22 @@ export function ChatClient({
     await sendMessage({ regenerationStyle: style, regenerateFromLatest: true });
   }
 
+  function onComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
+    if (isLoading || !input.trim()) {
+      return;
+    }
+
+    event.currentTarget.form?.requestSubmit();
+  }
+
   function onUseStarterPrompt(prompt: string) {
     setInput(prompt);
+    composerTextareaRef.current?.focus();
     void trackEvent("chat_starter_prompt_clicked", {
       prompt,
       personaId: activePersonaId ?? null,
@@ -568,17 +611,21 @@ export function ChatClient({
         </div>
 
         <form onSubmit={onSendMessage} className="chat-form">
-          <textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder="Share ingredients, cravings, regional clues, and family context. The more detail, the better grandma can personalize your recipe."
-            disabled={isLoading}
-            rows={4}
-            className="chat-textarea"
-          />
-          <button type="submit" disabled={isLoading || !input.trim()}>
-            {isLoading ? "Cooking..." : "Get Recipe"}
-          </button>
+          <div className="chat-composer">
+            <textarea
+              ref={composerTextareaRef}
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={onComposerKeyDown}
+              placeholder="Share ingredients, cravings, regional clues, and family context. The more detail, the better grandma can personalize your recipe."
+              disabled={isLoading}
+              rows={3}
+              className="chat-textarea"
+            />
+            <button type="submit" disabled={isLoading || !input.trim()}>
+              {isLoading ? "Cooking..." : "Get Recipe"}
+            </button>
+          </div>
         </form>
 
         <div className="starter-row">
@@ -594,6 +641,8 @@ export function ChatClient({
             </button>
           ))}
         </div>
+
+        <ChatCommunityDiscovery activeCuisine={persona?.cuisine ?? null} onUsePrompt={onUseStarterPrompt} />
 
         {latestRecipe ? (
           <section className="recipe-card">

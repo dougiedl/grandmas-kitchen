@@ -194,23 +194,153 @@ a:hover {
 }
 
 .home-hero-rotating {
-  background:
-    radial-gradient(circle at 10% 18%, rgba(214, 180, 145, 0.22), transparent 33%),
-    radial-gradient(circle at 82% 24%, rgba(175, 197, 170, 0.24), transparent 35%),
-    linear-gradient(165deg, rgba(255, 249, 241, 0.9), rgba(247, 236, 220, 0.82));
+  --home-culture-a: rgba(214, 180, 145, 0.24);
+  --home-culture-b: rgba(175, 197, 170, 0.24);
+  --home-culture-c: rgba(241, 214, 181, 0.27);
   position: relative;
 }
 
-.home-hero-rotating::after {
-  animation: culture-rotate 18s infinite ease-in-out;
-  border: 1px dashed rgba(201, 138, 77, 0.42);
-  border-radius: 14px;
-  color: #8a5e43;
-  content: "Italian kitchens • Mexican kitchens • Greek kitchens • Spanish kitchens • French kitchens • Lebanese kitchens • Persian kitchens";
-  display: block;
-  font-size: 0.84rem;
-  margin-top: 0.8rem;
+.home-hero-rotating::before {
+  background:
+    radial-gradient(circle at 11% 16%, var(--home-culture-a), transparent 32%),
+    radial-gradient(circle at 86% 18%, var(--home-culture-b), transparent 34%),
+    radial-gradient(circle at 46% 82%, var(--home-culture-c), transparent 36%),
+    repeating-linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.2) 28px,
+      rgba(241, 226, 205, 0.24) 28px,
+      rgba(241, 226, 205, 0.24) 56px
+    );
+  border-radius: 18px;
+  content: "";
+  inset: 0;
+  opacity: 0.88;
+  pointer-events: none;
+  position: absolute;
+}
+
+.home-hero-rotating > * {
+  position: relative;
+  z-index: 1;
+}
+
+.home-culture-home {
+  --home-culture-a: rgba(220, 188, 149, 0.25);
+  --home-culture-b: rgba(188, 206, 184, 0.24);
+  --home-culture-c: rgba(241, 213, 177, 0.24);
+}
+
+.home-culture-italian {
+  --home-culture-a: rgba(158, 199, 148, 0.3);
+  --home-culture-b: rgba(241, 174, 145, 0.29);
+  --home-culture-c: rgba(236, 205, 167, 0.25);
+}
+
+.home-culture-mexican {
+  --home-culture-a: rgba(238, 188, 124, 0.33);
+  --home-culture-b: rgba(157, 199, 151, 0.3);
+  --home-culture-c: rgba(228, 145, 103, 0.25);
+}
+
+.home-culture-greek {
+  --home-culture-a: rgba(165, 194, 227, 0.3);
+  --home-culture-b: rgba(188, 219, 208, 0.27);
+  --home-culture-c: rgba(230, 238, 247, 0.24);
+}
+
+.home-culture-spanish {
+  --home-culture-a: rgba(242, 194, 128, 0.31);
+  --home-culture-b: rgba(227, 150, 120, 0.3);
+  --home-culture-c: rgba(237, 217, 183, 0.24);
+}
+
+.home-culture-french {
+  --home-culture-a: rgba(206, 186, 227, 0.28);
+  --home-culture-b: rgba(243, 203, 173, 0.3);
+  --home-culture-c: rgba(235, 222, 200, 0.25);
+}
+
+.home-culture-lebanese {
+  --home-culture-a: rgba(173, 207, 159, 0.29);
+  --home-culture-b: rgba(242, 185, 140, 0.31);
+  --home-culture-c: rgba(237, 216, 174, 0.25);
+}
+
+.home-culture-persian {
+  --home-culture-a: rgba(194, 169, 220, 0.31);
+  --home-culture-b: rgba(238, 191, 136, 0.31);
+  --home-culture-c: rgba(230, 205, 177, 0.26);
+}
+
+.home-culture-chinese {
+  --home-culture-a: rgba(226, 164, 127, 0.33);
+  --home-culture-b: rgba(193, 120, 94, 0.31);
+  --home-culture-c: rgba(228, 204, 169, 0.26);
+}
+
+.home-culture-indian {
+  --home-culture-a: rgba(232, 178, 105, 0.34);
+  --home-culture-b: rgba(190, 151, 93, 0.31);
+  --home-culture-c: rgba(214, 115, 84, 0.27);
+}
+
+.home-culture-japanese {
+  --home-culture-a: rgba(201, 183, 164, 0.31);
+  --home-culture-b: rgba(168, 124, 99, 0.28);
+  --home-culture-c: rgba(221, 206, 188, 0.26);
+}
+
+.home-culture-jamaican {
+  --home-culture-a: rgba(133, 175, 110, 0.31);
+  --home-culture-b: rgba(226, 170, 90, 0.3);
+  --home-culture-c: rgba(94, 127, 84, 0.27);
+}
+
+.home-culture-badge-row {
+  margin-top: 0.75rem;
+}
+
+.home-culture-badge {
+  background: rgba(255, 248, 236, 0.92);
+  border: 1px dashed rgba(188, 124, 66, 0.55);
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0 0 0.45rem;
   padding: 0.48rem 0.62rem;
+}
+
+.home-culture-badge strong {
+  color: #844723;
+}
+
+.home-culture-line {
+  color: var(--ink-700);
+  margin: 0;
+}
+
+.home-culture-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.72rem;
+}
+
+.home-culture-dot {
+  background: rgba(255, 249, 239, 0.9);
+  border: 1px solid rgba(186, 117, 66, 0.58);
+  border-radius: var(--radius-pill);
+  color: #6a432f;
+  cursor: pointer;
+  font-size: 0.84rem;
+  min-height: 36px;
+  padding: 0.24rem 0.64rem;
+}
+
+.home-culture-dot-active {
+  background: linear-gradient(140deg, #f3d8b7, #e8c39d);
+  border-color: rgba(146, 84, 45, 0.78);
+  color: #4e2d1d;
 }
 
 .onboarding-strip {
@@ -342,9 +472,11 @@ a:hover {
 }
 
 .chat-layout {
+  align-items: start;
   display: grid;
   gap: 1rem;
   grid-template-columns: 300px minmax(0, 1fr);
+  min-height: 72vh;
 }
 
 .chat-sidebar {
@@ -439,8 +571,8 @@ a:hover {
 }
 
 .chat-form {
-  display: flex;
-  gap: 0.5rem;
+  margin-top: 0.35rem;
+  width: 100%;
 }
 
 .chat-form input,
@@ -469,18 +601,49 @@ select {
 }
 
 .chat-textarea {
-  min-height: 124px;
-  resize: vertical;
+  border: none;
+  box-shadow: none;
+  min-height: 88px;
+  overflow-y: auto;
+  padding: 0.35rem 5.9rem 0.4rem 0.2rem;
+  resize: none;
+  width: 100%;
 }
 
 .chat-form button {
   background: linear-gradient(145deg, #b67043, #9b5a33);
   border: 1px solid #8d4f2d;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: #fff8ef;
   cursor: pointer;
-  min-height: 44px;
-  padding: 0.67rem 0.95rem;
+  min-height: 42px;
+  min-width: 98px;
+  padding: 0.55rem 0.95rem;
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.55rem;
+}
+
+.chat-composer {
+  align-items: flex-end;
+  background: rgba(255, 252, 246, 0.94);
+  border: 1px solid rgba(201, 138, 77, 0.58);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  min-height: 110px;
+  padding: 0.62rem;
+  position: relative;
+  width: 100%;
+}
+
+.chat-composer:focus-within {
+  border-color: rgba(165, 97, 50, 0.82);
+  box-shadow: 0 0 0 3px rgba(201, 138, 77, 0.18), var(--shadow-card);
+}
+
+.chat-textarea:focus {
+  outline: none;
 }
 
 .chat-form button:disabled,
@@ -564,6 +727,13 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
+.community-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+  margin: 0.4rem 0 0.75rem;
+}
+
 .community-card {
   background: linear-gradient(160deg, rgba(255, 252, 246, 0.88), rgba(243, 233, 220, 0.85));
   border: 1px solid rgba(201, 138, 77, 0.45);
@@ -575,6 +745,10 @@ select {
 .community-card p {
   color: var(--ink-700);
   margin: 0.2rem 0 0;
+}
+
+.community-card-actions {
+  margin-top: 0.58rem;
 }
 
 .recipes-toolbar {
@@ -613,6 +787,7 @@ select {
 
 .recipe-detail {
   max-width: 980px;
+  min-height: 72vh;
 }
 
 .recipe-hero {
@@ -701,18 +876,42 @@ select {
 }
 
 .kitchen-theme {
+  --kitchen-photo: none;
+  --kitchen-photo-fallback: none;
+  --kitchen-side-opacity: 0.18;
   border-radius: var(--radius-md);
+  border: 1px solid rgba(201, 138, 77, 0.28);
+  background: linear-gradient(170deg, rgba(255, 251, 244, 0.9), rgba(245, 235, 219, 0.83));
+  isolation: isolate;
+  overflow: visible;
   padding: 0.42rem;
   position: relative;
 }
 
-.kitchen-theme::before {
-  border-radius: var(--radius-md);
+.kitchen-theme::before,
+.kitchen-theme::after {
+  background-image: var(--kitchen-photo), var(--kitchen-photo-fallback);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 18px;
   content: "";
-  inset: 0;
-  opacity: 0.42;
+  inset-block: 10px;
+  opacity: var(--kitchen-side-opacity);
   pointer-events: none;
   position: absolute;
+  width: 210px;
+  z-index: 0;
+}
+
+.kitchen-theme::before {
+  left: -232px;
+  mask-image: linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+
+.kitchen-theme::after {
+  right: -232px;
+  mask-image: linear-gradient(to left, transparent 0%, black 18%, black 82%, transparent 100%);
 }
 
 .kitchen-theme > * {
@@ -720,59 +919,76 @@ select {
   z-index: 1;
 }
 
-.kitchen-theme-home::before {
-  background:
-    linear-gradient(0deg, rgba(233, 211, 183, 0.2), rgba(233, 211, 183, 0.2)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.26) 22px, transparent 22px, transparent 44px);
+.kitchen-theme-home {
+  --kitchen-photo: url("/backgrounds/home-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/home-kitchen.svg");
+  --kitchen-side-opacity: 0.14;
 }
 
-.kitchen-theme-italian::before {
-  background:
-    radial-gradient(circle at 15% 25%, rgba(183, 221, 181, 0.4), transparent 33%),
-    radial-gradient(circle at 86% 75%, rgba(244, 197, 171, 0.45), transparent 36%),
-    repeating-linear-gradient(180deg, rgba(255, 246, 237, 0.4), rgba(255, 246, 237, 0.4) 18px, rgba(236, 214, 192, 0.34) 18px, rgba(236, 214, 192, 0.34) 36px);
+.kitchen-theme-italian {
+  --kitchen-photo: url("/backgrounds/italian-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/italian-kitchen.svg");
+  --kitchen-side-opacity: 0.16;
 }
 
-.kitchen-theme-mexican::before {
-  background:
-    radial-gradient(circle at 16% 18%, rgba(250, 211, 157, 0.46), transparent 34%),
-    radial-gradient(circle at 85% 80%, rgba(184, 220, 186, 0.42), transparent 36%),
-    repeating-linear-gradient(135deg, rgba(255, 250, 238, 0.36), rgba(255, 250, 238, 0.36) 20px, rgba(238, 220, 194, 0.33) 20px, rgba(238, 220, 194, 0.33) 40px);
+.kitchen-theme-mexican {
+  --kitchen-photo: url("/backgrounds/mexican-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/mexican-kitchen.svg");
+  --kitchen-side-opacity: 0.18;
 }
 
-.kitchen-theme-greek::before {
-  background:
-    radial-gradient(circle at 18% 15%, rgba(176, 205, 232, 0.44), transparent 31%),
-    radial-gradient(circle at 82% 83%, rgba(214, 232, 220, 0.4), transparent 35%),
-    repeating-linear-gradient(45deg, rgba(247, 251, 255, 0.35), rgba(247, 251, 255, 0.35) 18px, rgba(218, 230, 240, 0.32) 18px, rgba(218, 230, 240, 0.32) 36px);
+.kitchen-theme-greek {
+  --kitchen-photo: url("/backgrounds/greek-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/greek-kitchen.svg");
+  --kitchen-side-opacity: 0.17;
 }
 
-.kitchen-theme-spanish::before {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(249, 211, 165, 0.42), transparent 32%),
-    radial-gradient(circle at 86% 80%, rgba(236, 177, 151, 0.42), transparent 36%),
-    repeating-linear-gradient(90deg, rgba(255, 248, 236, 0.37), rgba(255, 248, 236, 0.37) 22px, rgba(240, 223, 199, 0.34) 22px, rgba(240, 223, 199, 0.34) 44px);
+.kitchen-theme-spanish {
+  --kitchen-photo: url("/backgrounds/spanish-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/spanish-kitchen.svg");
+  --kitchen-side-opacity: 0.16;
 }
 
-.kitchen-theme-french::before {
-  background:
-    radial-gradient(circle at 10% 18%, rgba(214, 197, 230, 0.35), transparent 31%),
-    radial-gradient(circle at 88% 80%, rgba(246, 214, 187, 0.42), transparent 36%),
-    repeating-linear-gradient(120deg, rgba(255, 251, 246, 0.35), rgba(255, 251, 246, 0.35) 18px, rgba(235, 223, 206, 0.33) 18px, rgba(235, 223, 206, 0.33) 36px);
+.kitchen-theme-french {
+  --kitchen-photo: url("/backgrounds/french-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/french-kitchen.svg");
+  --kitchen-side-opacity: 0.16;
 }
 
-.kitchen-theme-lebanese::before {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(191, 223, 184, 0.38), transparent 34%),
-    radial-gradient(circle at 82% 82%, rgba(245, 206, 173, 0.44), transparent 36%),
-    repeating-linear-gradient(45deg, rgba(255, 250, 241, 0.37), rgba(255, 250, 241, 0.37) 19px, rgba(230, 217, 197, 0.33) 19px, rgba(230, 217, 197, 0.33) 38px);
+.kitchen-theme-lebanese {
+  --kitchen-photo: url("/backgrounds/lebanese-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/lebanese-kitchen.svg");
+  --kitchen-side-opacity: 0.18;
 }
 
-.kitchen-theme-persian::before {
-  background:
-    radial-gradient(circle at 14% 18%, rgba(217, 188, 229, 0.36), transparent 32%),
-    radial-gradient(circle at 84% 80%, rgba(237, 199, 150, 0.45), transparent 35%),
-    repeating-linear-gradient(135deg, rgba(255, 247, 239, 0.36), rgba(255, 247, 239, 0.36) 19px, rgba(236, 218, 195, 0.34) 19px, rgba(236, 218, 195, 0.34) 38px);
+.kitchen-theme-persian {
+  --kitchen-photo: url("/backgrounds/persian-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/persian-kitchen.svg");
+  --kitchen-side-opacity: 0.18;
+}
+
+.kitchen-theme-chinese {
+  --kitchen-photo: url("/backgrounds/chinese-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/chinese-kitchen.svg");
+  --kitchen-side-opacity: 0.18;
+}
+
+.kitchen-theme-indian {
+  --kitchen-photo: url("/backgrounds/indian-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/indian-kitchen.svg");
+  --kitchen-side-opacity: 0.19;
+}
+
+.kitchen-theme-japanese {
+  --kitchen-photo: url("/backgrounds/japanese-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/japanese-kitchen.svg");
+  --kitchen-side-opacity: 0.16;
+}
+
+.kitchen-theme-jamaican {
+  --kitchen-photo: url("/backgrounds/jamaican-kitchen.png");
+  --kitchen-photo-fallback: url("/backgrounds/jamaican-kitchen.svg");
+  --kitchen-side-opacity: 0.19;
 }
 
 @keyframes fade-lift {
@@ -799,20 +1015,14 @@ select {
   }
 }
 
-@keyframes culture-rotate {
-  0%, 100% {
-    opacity: 0.7;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-1px);
-  }
-}
-
 @media (max-width: 980px) {
   .chat-layout {
     grid-template-columns: 1fr;
+  }
+
+  .kitchen-theme::before,
+  .kitchen-theme::after {
+    display: none;
   }
 }
 
@@ -866,12 +1076,21 @@ select {
     padding: 0.55rem 0.64rem;
   }
 
-  .chat-form {
-    flex-direction: column;
+  .chat-form button {
+    min-width: 92px;
+    right: 0.45rem;
+    bottom: 0.45rem;
   }
 
-  .chat-form button {
-    width: 100%;
+  .chat-composer {
+    border-radius: 16px;
+    min-height: 104px;
+    padding: 0.52rem;
+  }
+
+  .chat-textarea {
+    min-height: 82px;
+    padding-right: 5.5rem;
   }
 
   .starter-row {
