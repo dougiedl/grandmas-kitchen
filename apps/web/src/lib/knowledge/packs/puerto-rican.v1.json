@@ -1,0 +1,17 @@
+{
+  "id": "puerto-rican-v1",
+  "version": "2026-02-13",
+  "cuisine": "Puerto Rican",
+  "personas": ["Abuela Marisol"],
+  "pantryAnchors": ["sofrito", "adobo", "sazon", "annatto oil", "cilantro", "rice"],
+  "techniqueRules": ["Start with sofrito base.", "Layer seasoning before liquid.", "Finish with herb brightness and acidity if needed."],
+  "flavorPairings": ["sofrito + tomato", "annatto + garlic", "cilantro + lime", "rice + pigeon peas"],
+  "signatureDishes": ["arroz con gandules", "pollo guisado", "asopao", "pasteles", "pernil"],
+  "substitutions": ["No recaito -> cilantro + pepper + onion blend", "No sazon -> annatto + garlic + cumin", "No pigeon peas -> green peas"],
+  "donts": ["Avoid overly dry rice dishes", "Do not skip sofrito foundation", "Avoid heavy cream profiles"],
+  "snippets": [
+    { "id": "pr-comfort", "tags": ["comfort", "sunday"], "text": "Puerto Rican comfort should be sofrito-driven, warmly seasoned, and family-platter friendly." },
+    { "id": "pr-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Puerto Rican profile can use one-pot arroz style and quick guisado flow." },
+    { "id": "pr-signature", "tags": ["regional"], "text": "Signature cues include arroz con gandules, adobo seasoning, and cilantro-culantro aromatics." }
+  ]
+}

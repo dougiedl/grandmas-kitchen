@@ -4,10 +4,21 @@ import type { RegenerationStyle } from "@/lib/chat/recipe-schema";
 import frenchPack from "@/lib/knowledge/packs/french.v1.json";
 import greekPack from "@/lib/knowledge/packs/greek.v1.json";
 import italianPack from "@/lib/knowledge/packs/italian.v1.json";
+import jamaicanPack from "@/lib/knowledge/packs/jamaican.v1.json";
+import japanesePack from "@/lib/knowledge/packs/japanese.v1.json";
+import koreanPack from "@/lib/knowledge/packs/korean.v1.json";
 import lebanesePack from "@/lib/knowledge/packs/lebanese.v1.json";
 import mexicanPack from "@/lib/knowledge/packs/mexican.v1.json";
 import persianPack from "@/lib/knowledge/packs/persian.v1.json";
+import russianPack from "@/lib/knowledge/packs/russian.v1.json";
 import spanishPack from "@/lib/knowledge/packs/spanish.v1.json";
+import chinesePack from "@/lib/knowledge/packs/chinese.v1.json";
+import indianPack from "@/lib/knowledge/packs/indian.v1.json";
+import puertoRicanPack from "@/lib/knowledge/packs/puerto-rican.v1.json";
+import dominicanPack from "@/lib/knowledge/packs/dominican.v1.json";
+import filipinoPack from "@/lib/knowledge/packs/filipino.v1.json";
+import jewishPack from "@/lib/knowledge/packs/jewish.v1.json";
+import westAfricanPack from "@/lib/knowledge/packs/west-african.v1.json";
 
 type KnowledgeSnippet = {
   id: string;
@@ -61,6 +72,17 @@ const PACKS: CuisineKnowledgePack[] = [
   frenchPack as CuisineKnowledgePack,
   lebanesePack as CuisineKnowledgePack,
   persianPack as CuisineKnowledgePack,
+  chinesePack as CuisineKnowledgePack,
+  indianPack as CuisineKnowledgePack,
+  japanesePack as CuisineKnowledgePack,
+  jamaicanPack as CuisineKnowledgePack,
+  russianPack as CuisineKnowledgePack,
+  puertoRicanPack as CuisineKnowledgePack,
+  dominicanPack as CuisineKnowledgePack,
+  koreanPack as CuisineKnowledgePack,
+  filipinoPack as CuisineKnowledgePack,
+  jewishPack as CuisineKnowledgePack,
+  westAfricanPack as CuisineKnowledgePack,
 ];
 
 const HOME_STYLE_PACK: CuisineKnowledgePack = {
@@ -90,6 +112,13 @@ function normalizeCuisine(cuisine: string): string {
   if (lower.includes("ind")) return "Indian";
   if (lower.includes("japan")) return "Japanese";
   if (lower.includes("jama")) return "Jamaican";
+  if (lower.includes("russ")) return "Russian";
+  if (lower.includes("puerto")) return "Puerto Rican";
+  if (lower.includes("dominican")) return "Dominican";
+  if (lower.includes("korean")) return "Korean";
+  if (lower.includes("filip")) return "Filipino";
+  if (lower.includes("jewish") || lower.includes("ashken")) return "Jewish";
+  if (lower.includes("west african") || lower.includes("nigerian") || lower.includes("ghanaian")) return "West African";
   return "Home Style";
 }
 
@@ -108,6 +137,13 @@ function inferTags(input: KnowledgeInput): string[] {
   if (text.includes("italian-american") || text.includes("new york")) tags.add("italian-american");
   if (text.includes("oaxacan")) tags.add("oaxacan");
   if (text.includes("valencian") || text.includes("valencia")) tags.add("valencian");
+  if (text.includes("russian") || text.includes("babushka") || text.includes("pelmeni") || text.includes("borscht")) tags.add("russian");
+  if (text.includes("puerto rican") || text.includes("boricua") || text.includes("asopao")) tags.add("puerto-rican");
+  if (text.includes("dominican") || text.includes("sancocho") || text.includes("la bandera")) tags.add("dominican");
+  if (text.includes("korean") || text.includes("kimchi") || text.includes("jjigae") || text.includes("halmeoni")) tags.add("korean");
+  if (text.includes("filipino") || text.includes("adobo") || text.includes("sinigang") || text.includes("lola")) tags.add("filipino");
+  if (text.includes("jewish") || text.includes("bubbe") || text.includes("brisket") || text.includes("kugel")) tags.add("jewish");
+  if (text.includes("west african") || text.includes("jollof") || text.includes("egusi") || text.includes("groundnut")) tags.add("west-african");
   if (input.regenerationStyle === "faster") tags.add("weeknight");
   if (input.regenerationStyle === "traditional") tags.add("sunday");
 

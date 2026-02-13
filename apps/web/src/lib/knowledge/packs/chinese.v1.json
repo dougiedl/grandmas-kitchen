@@ -1,0 +1,18 @@
+{
+  "id": "chinese-v1",
+  "version": "2026-02-13",
+  "cuisine": "Chinese",
+  "personas": ["Nai Nai Mei"],
+  "pantryAnchors": ["ginger", "garlic", "scallion", "soy sauce", "rice vinegar", "sesame oil"],
+  "techniqueRules": ["Build aromatics first.", "Balance salty-sweet-acid-umami.", "Use high heat for stir-fry, gentle heat for braise."],
+  "flavorPairings": ["ginger + scallion", "soy + vinegar", "garlic + sesame", "chili + fermented bean paste"],
+  "signatureDishes": ["tomato egg", "red-braised chicken", "scallion noodles", "dumplings", "congee"],
+  "substitutions": ["No Shaoxing wine -> dry sherry", "No oyster sauce -> soy + pinch sugar", "No bok choy -> cabbage"],
+  "donts": ["Avoid random dairy-heavy additions", "Do not over-thicken sauces", "Avoid low-heat stir-fry that steams ingredients"],
+  "snippets": [
+    { "id": "cn-home", "tags": ["comfort"], "text": "Chinese home comfort should emphasize balance, not maximum heat or sweetness." },
+    { "id": "cn-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Chinese profile should use one-wok or one-pot flow and quick sauces." },
+    { "id": "cn-cantonese", "tags": ["regional", "cantonese"], "text": "Cantonese cues: cleaner seasoning, ginger-scallion aromatics, gentle sauces." },
+    { "id": "cn-northern", "tags": ["regional", "dumpling"], "text": "Northern cues: dumpling or noodle comfort, garlic-vinegar accents, wheat-forward meals." }
+  ]
+}

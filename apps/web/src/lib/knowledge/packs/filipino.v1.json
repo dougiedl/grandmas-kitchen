@@ -1,0 +1,17 @@
+{
+  "id": "filipino-v1",
+  "version": "2026-02-13",
+  "cuisine": "Filipino",
+  "personas": ["Lola Maria"],
+  "pantryAnchors": ["soy sauce", "vinegar", "garlic", "onion", "bay leaf", "black pepper"],
+  "techniqueRules": ["Balance sour-salty-savory profile.", "Simmer until sauce coats well.", "Keep rice pairing central to dish design."],
+  "flavorPairings": ["soy + vinegar", "garlic + peppercorn", "ginger + fish sauce", "calamansi + savory broth"],
+  "signatureDishes": ["adobo", "sinigang", "pancit", "arroz caldo", "giniling"],
+  "substitutions": ["No cane vinegar -> rice vinegar", "No fish sauce -> soy + salt", "No calamansi -> lime"],
+  "donts": ["Avoid over-sugaring savory dishes", "Do not remove acidity from sinigang profiles", "Avoid dry adobo sauces"],
+  "snippets": [
+    { "id": "ph-comfort", "tags": ["comfort", "sunday"], "text": "Filipino comfort should feel tangy-savory, family-table friendly, and rice-anchored." },
+    { "id": "ph-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Filipino profile can simplify to adobo skillet or quick noodle-pan style." },
+    { "id": "ph-signature", "tags": ["regional"], "text": "Filipino cues include adobo balance, sinigang sour broth, and garlic-forward aromatics." }
+  ]
+}

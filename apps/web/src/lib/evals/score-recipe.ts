@@ -51,6 +51,17 @@ const CUISINE_AUTH_TOKENS: Record<string, string[]> = {
   french: ["shallot", "butter", "thyme", "ragout", "potage"],
   lebanese: ["lemon", "mint", "parsley", "chickpea", "lentil", "warm spices"],
   persian: ["saffron", "turmeric", "dried lime", "pomegranate", "walnut", "tahdig"],
+  chinese: ["ginger", "scallion", "soy", "vinegar", "wok", "braise"],
+  indian: ["masala", "cumin", "coriander", "turmeric", "tadka", "dal"],
+  japanese: ["dashi", "miso", "soy", "mirin", "rice", "umami"],
+  jamaican: ["allspice", "thyme", "scotch bonnet", "jerk", "rice and peas"],
+  russian: ["dill", "borscht", "pelmeni", "sour cream", "stew"],
+  "puerto rican": ["sofrito", "sazon", "adobo", "arroz con gandules", "asopao"],
+  dominican: ["sancocho", "adobo", "moro", "la bandera", "guisado"],
+  korean: ["kimchi", "gochujang", "doenjang", "jjigae", "banchan"],
+  filipino: ["adobo", "sinigang", "soy", "vinegar", "garlic rice"],
+  jewish: ["chicken soup", "matzo", "brisket", "kugel", "latkes"],
+  "west african": ["jollof", "egusi", "groundnut", "pepper stew", "rice"],
 };
 
 export function scoreRecipe({ prompt, recipe }: EvalInput): EvalScore {

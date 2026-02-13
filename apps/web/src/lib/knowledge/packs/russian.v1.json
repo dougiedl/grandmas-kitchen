@@ -1,0 +1,17 @@
+{
+  "id": "russian-v1",
+  "version": "2026-02-13",
+  "cuisine": "Russian",
+  "personas": ["Babushka Anya"],
+  "pantryAnchors": ["onion", "garlic", "dill", "cabbage", "potato", "sour cream"],
+  "techniqueRules": ["Build stock and aromatics patiently.", "Use gentle simmer for soups and braises.", "Finish with dill and acidity balance."],
+  "flavorPairings": ["dill + sour cream", "beet + vinegar", "mushroom + onion", "butter + black pepper"],
+  "signatureDishes": ["pelmeni", "borscht", "beef stroganoff", "cabbage rolls", "kotleti"],
+  "substitutions": ["No sour cream -> plain yogurt", "No beets -> carrot + cabbage soup variation", "No dill -> parsley + chive"],
+  "donts": ["Avoid overly spicy chile profiles", "Do not skip broth depth", "Avoid sugary sauces unless requested"],
+  "snippets": [
+    { "id": "ru-comfort", "tags": ["comfort", "sunday"], "text": "Russian comfort should feel hearty, brothy, and winter-warm with herb finish." },
+    { "id": "ru-dumpling", "tags": ["regional", "dumpling"], "text": "Pelmeni-style cues: simple filling, pepper, onion, and broth or sour cream service." },
+    { "id": "ru-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Russian profile can simplify to skillet stroganoff or quick soup base." }
+  ]
+}

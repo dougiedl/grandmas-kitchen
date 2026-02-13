@@ -1,0 +1,17 @@
+{
+  "id": "dominican-v1",
+  "version": "2026-02-13",
+  "cuisine": "Dominican",
+  "personas": ["Abuela Yolanda"],
+  "pantryAnchors": ["onion", "garlic", "oregano", "adobo seasoning", "cilantro", "tomato paste"],
+  "techniqueRules": ["Season proteins ahead when possible.", "Brown before braising for depth.", "Use starch + stew combinations for family comfort."],
+  "flavorPairings": ["oregano + garlic", "tomato + adobo", "cilantro + lime", "rice + beans"],
+  "signatureDishes": ["la bandera", "sancocho", "pollo guisado", "moro de guandules", "habichuelas guisadas"],
+  "substitutions": ["No culantro -> cilantro + parsley", "No adobo blend -> garlic + oregano + salt + pepper", "No guandules -> pinto beans"],
+  "donts": ["Avoid under-seasoned braises", "Do not skip browning step", "Avoid excess sweetness"],
+  "snippets": [
+    { "id": "do-comfort", "tags": ["comfort", "sunday"], "text": "Dominican comfort should be generous, stew-forward, and rice-and-beans anchored." },
+    { "id": "do-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Dominican flow can use faster guisado with pre-ground seasoning base." },
+    { "id": "do-signature", "tags": ["regional"], "text": "Dominican signature cues include sancocho, la bandera components, and adobo-style seasoning." }
+  ]
+}

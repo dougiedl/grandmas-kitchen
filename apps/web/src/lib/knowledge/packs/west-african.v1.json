@@ -1,0 +1,17 @@
+{
+  "id": "west-african-v1",
+  "version": "2026-02-13",
+  "cuisine": "West African",
+  "personas": ["Mama Efua"],
+  "pantryAnchors": ["onion", "tomato", "pepper", "ginger", "garlic", "palm or neutral oil"],
+  "techniqueRules": ["Build pepper-tomato base thoroughly.", "Layer spice and aromatics before starch.", "Use simmer depth for stews and rice."],
+  "flavorPairings": ["tomato + pepper", "ginger + garlic", "onion + thyme", "groundnut + chili warmth"],
+  "signatureDishes": ["jollof rice", "groundnut stew", "egusi", "waakye", "stewed fish"],
+  "substitutions": ["No Scotch bonnet -> habanero sparingly", "No palm oil -> neutral oil with paprika", "No groundnut paste -> peanut butter unsweetened"],
+  "donts": ["Avoid bland low-seasoning rice", "Do not undercook pepper base", "Avoid watery stew texture"],
+  "snippets": [
+    { "id": "wa-comfort", "tags": ["comfort", "sunday"], "text": "West African comfort should be pepper-rich, aromatic, and built for shared-pot family meals." },
+    { "id": "wa-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight West African profile can streamline jollof base while keeping pepper depth." },
+    { "id": "wa-signature", "tags": ["regional"], "text": "Signature cues include jollof layering, groundnut stew body, and robust seasoning." }
+  ]
+}

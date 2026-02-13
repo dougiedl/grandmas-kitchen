@@ -1,0 +1,17 @@
+{
+  "id": "jewish-v1",
+  "version": "2026-02-13",
+  "cuisine": "Jewish",
+  "personas": ["Bubbe Rivka"],
+  "pantryAnchors": ["onion", "carrot", "celery", "chicken stock", "dill", "black pepper"],
+  "techniqueRules": ["Start with aromatic stock base.", "Cook low and steady for braises.", "Keep family-table and holiday practicality in tone."],
+  "flavorPairings": ["dill + chicken broth", "onion + schmaltz-like richness", "root vegetables + pepper", "brisket + garlic"],
+  "signatureDishes": ["chicken soup", "matzo ball soup", "brisket", "kugel", "latkes"],
+  "substitutions": ["No schmaltz -> chicken fat or neutral oil + butter", "No matzo meal -> cracker crumbs", "No dill -> parsley + chive"],
+  "donts": ["Avoid overly spicy chile-forward profiles", "Do not skip broth depth", "Avoid dry brisket texture"],
+  "snippets": [
+    { "id": "jw-comfort", "tags": ["comfort", "sunday"], "text": "Jewish family comfort should be soup-first, nourishing, and deeply nostalgic." },
+    { "id": "jw-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Jewish profile can adapt to skillet latke-style and fast broth-based meals." },
+    { "id": "jw-signature", "tags": ["regional"], "text": "Ashkenazi-style cues include matzo ball broth, brisket braise, and kugel-style bakes." }
+  ]
+}

@@ -10,7 +10,14 @@ values
   ('nai-nai-mei', 'Nai Nai Mei', 'Chinese', 'Wok hei comfort, ginger-scallion aromatics, and family table classics'),
   ('dadi-asha', 'Dadi Asha', 'Indian', 'Tempered spices, layered masala, and soulful ghar-style comfort'),
   ('obaachan-yumi', 'Obaachan Yumi', 'Japanese', 'Balanced umami, seasonal simplicity, and gentle home-style precision'),
-  ('grandma-inez', 'Grandma Inez', 'Jamaican', 'Island warmth, allspice depth, and Sunday-pot family comfort')
+  ('grandma-inez', 'Grandma Inez', 'Jamaican', 'Island warmth, allspice depth, and Sunday-pot family comfort'),
+  ('babushka-anya', 'Babushka Anya', 'Russian', 'Dumpling comfort, dill warmth, and hearty family table cooking'),
+  ('abuela-marisol', 'Abuela Marisol', 'Puerto Rican', 'Sofrito depth, sazon warmth, and island family comfort'),
+  ('abuela-yolanda', 'Abuela Yolanda', 'Dominican', 'Sancocho comfort and adobo-forward Dominican home cooking'),
+  ('halmeoni-soon', 'Halmeoni Soon', 'Korean', 'Jang depth, stews, and deeply comforting Korean home meals'),
+  ('lola-maria', 'Lola Maria', 'Filipino', 'Sweet-sour balance, garlic rice comfort, and Filipino family classics'),
+  ('bubbe-rivka', 'Bubbe Rivka', 'Jewish', 'Soup-first comfort and warm holiday-style family cooking'),
+  ('mama-efua', 'Mama Efua', 'West African', 'Pepper warmth, long-simmer depth, and shared-pot family comfort')
 on conflict (id) do update set
   name = excluded.name,
   cuisine = excluded.cuisine,

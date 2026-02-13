@@ -472,6 +472,27 @@ export function ChatClient({
     if (text.includes("jamaican") || text.includes("jerk") || text.includes("rice and peas") || text.includes("ackee")) {
       return "grandma-inez";
     }
+    if (text.includes("russian") || text.includes("babushka") || text.includes("pelmeni") || text.includes("borscht")) {
+      return "babushka-anya";
+    }
+    if (text.includes("puerto rican") || text.includes("boricua") || text.includes("arroz con gandules")) {
+      return "abuela-marisol";
+    }
+    if (text.includes("dominican") || text.includes("la bandera") || text.includes("sancocho")) {
+      return "abuela-yolanda";
+    }
+    if (text.includes("korean") || text.includes("halmeoni") || text.includes("kimchi")) {
+      return "halmeoni-soon";
+    }
+    if (text.includes("filipino") || text.includes("lola") || text.includes("adobo") || text.includes("sinigang")) {
+      return "lola-maria";
+    }
+    if (text.includes("jewish") || text.includes("bubbe") || text.includes("brisket") || text.includes("kugel")) {
+      return "bubbe-rivka";
+    }
+    if (text.includes("west african") || text.includes("jollof") || text.includes("egusi") || text.includes("groundnut")) {
+      return "mama-efua";
+    }
 
     return threads.find((thread) => thread.persona_id)?.persona_id ?? "nonna-rosa";
   }

@@ -60,7 +60,36 @@ values
   -- Jamaican
   ('jm-kingston-home', 'Jamaican', 'Kingston', 'Kingston Home Kitchen', '{"kingston","jamaican home"}', '{"tone":"vibrant and warm","focus":"allspice-thyme stew foundations"}'::jsonb, true),
   ('jm-country-yard', 'Jamaican', 'Countryside', 'Jamaican Country Yard Style', '{"jamaican country","yard style"}', '{"tone":"rustic and soulful","focus":"slow-pot comfort and pepper heat"}'::jsonb, true),
-  ('jm-jerk-house', 'Jamaican', 'Jerk-House', 'Jerk-House Family Style', '{"jerk","scotch bonnet","pimento"}', '{"tone":"smoky and celebratory","focus":"jerk spice profile and grill cues"}'::jsonb, true)
+  ('jm-jerk-house', 'Jamaican', 'Jerk-House', 'Jerk-House Family Style', '{"jerk","scotch bonnet","pimento"}', '{"tone":"smoky and celebratory","focus":"jerk spice profile and grill cues"}'::jsonb, true),
+
+  -- Russian
+  ('ru-moscow-home', 'Russian', 'Moscow', 'Moscow Family Home Style', '{"russian","moscow","babushka"}', '{"tone":"hearty and practical","focus":"simmered soups and braises"}'::jsonb, true),
+  ('ru-pelmeni-comfort', 'Russian', 'Siberian', 'Pelmeni Dumpling Comfort', '{"pelmeni","siberian dumplings"}', '{"tone":"warming and generous","focus":"dumpling broth comfort"}'::jsonb, true),
+  ('ru-village-soup', 'Russian', 'Village', 'Russian Village Soup Table', '{"borscht","cabbage soup","dill"}', '{"tone":"cozy and rustic","focus":"root vegetables and dill brightness"}'::jsonb, true),
+
+  -- Puerto Rican
+  ('pr-home-sofrito', 'Puerto Rican', 'Island Home', 'Puerto Rican Sofrito Home Style', '{"puerto rican","boricua","sofrito"}', '{"tone":"warm and celebratory","focus":"sofrito depth and sazon balance"}'::jsonb, true),
+  ('pr-sunday-asopao', 'Puerto Rican', 'Sunday Pot', 'Puerto Rican Sunday Asopao Style', '{"asopao","arroz con gandules"}', '{"tone":"comforting and communal","focus":"rice-stew comfort"}'::jsonb, true),
+
+  -- Dominican
+  ('do-home-adobo', 'Dominican', 'Santo Domingo', 'Dominican Adobo Home Style', '{"dominican","la bandera","adobo"}', '{"tone":"homey and bold","focus":"adobo seasoning and braise comfort"}'::jsonb, true),
+  ('do-sancocho-family', 'Dominican', 'Cibao', 'Dominican Sancocho Family Pot', '{"sancocho","moro de guandules"}', '{"tone":"festive and hearty","focus":"stewed meats and root comfort"}'::jsonb, true),
+
+  -- Korean
+  ('kr-seoul-home', 'Korean', 'Seoul', 'Seoul Home Kitchen Style', '{"korean","seoul","halmeoni"}', '{"tone":"balanced and warming","focus":"stews, banchan logic, and rice"}'::jsonb, true),
+  ('kr-jjigae-comfort', 'Korean', 'Jjigae Table', 'Korean Jjigae Comfort Style', '{"kimchi jjigae","doenjang","jjigae"}', '{"tone":"cozy and savory","focus":"jang depth and broth layering"}'::jsonb, true),
+
+  -- Filipino
+  ('ph-adobo-home', 'Filipino', 'Luzon', 'Filipino Adobo Home Style', '{"filipino","adobo","lola"}', '{"tone":"bright and soulful","focus":"soy-vinegar-garlic balance"}'::jsonb, true),
+  ('ph-sinigang-family', 'Filipino', 'Family Pot', 'Filipino Sinigang Family Pot', '{"sinigang","pancit","arroz caldo"}', '{"tone":"nurturing and tangy","focus":"sour broth comfort"}'::jsonb, true),
+
+  -- Jewish
+  ('jw-ashkenazi-home', 'Jewish', 'Ashkenazi', 'Ashkenazi Family Home Style', '{"jewish","ashkenazi","bubbe"}', '{"tone":"nourishing and nostalgic","focus":"soup-first and braised comfort"}'::jsonb, true),
+  ('jw-holiday-table', 'Jewish', 'Holiday Table', 'Jewish Holiday Table Comfort', '{"brisket","kugel","matzo ball"}', '{"tone":"festive and homey","focus":"slow braise and broth richness"}'::jsonb, true),
+
+  -- West African
+  ('wa-jollof-home', 'West African', 'Jollof Belt', 'West African Jollof Home Style', '{"west african","jollof","nigerian","ghanaian"}', '{"tone":"vibrant and communal","focus":"pepper base and rice layering"}'::jsonb, true),
+  ('wa-groundnut-stew', 'West African', 'Stew Pot', 'West African Groundnut Stew Style', '{"groundnut","egusi","stew"}', '{"tone":"deep and comforting","focus":"nutty stew depth and shared-pot flow"}'::jsonb, true)
 on conflict (id) do update set
   cuisine = excluded.cuisine,
   region = excluded.region,

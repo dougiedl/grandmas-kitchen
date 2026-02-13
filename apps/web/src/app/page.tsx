@@ -9,7 +9,8 @@ export default async function HomePage({
 }) {
   const params = await searchParams;
   const shouldPromptSignIn = params?.signin === "1";
-  const cuisines = [...new Set(LAUNCH_PERSONAS.map((persona) => persona.cuisine))];
+  const featuredPersonas = LAUNCH_PERSONAS.filter((persona) => persona.featured !== false);
+  const cuisines = [...new Set(featuredPersonas.map((persona) => persona.cuisine))];
   const copyVersion = "ux-conversion-v1";
 
   return (
@@ -34,7 +35,7 @@ export default async function HomePage({
 
         <h3>Choose Your Grandma Style</h3>
         <div className="persona-grid">
-          {LAUNCH_PERSONAS.map((persona) => (
+          {featuredPersonas.map((persona) => (
             <PersonaCardLink key={persona.id} persona={persona} copyVersion={copyVersion} />
           ))}
         </div>

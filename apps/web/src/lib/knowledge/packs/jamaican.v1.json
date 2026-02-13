@@ -1,0 +1,17 @@
+{
+  "id": "jamaican-v1",
+  "version": "2026-02-13",
+  "cuisine": "Jamaican",
+  "personas": ["Grandma Inez"],
+  "pantryAnchors": ["scallion", "thyme", "allspice", "scotch bonnet", "onion", "garlic"],
+  "techniqueRules": ["Marinate for flavor penetration.", "Brown and simmer for depth.", "Balance heat with sweetness and aromatics."],
+  "flavorPairings": ["allspice + thyme", "scotch bonnet + scallion", "ginger + garlic", "coconut + savory stew base"],
+  "signatureDishes": ["brown stew chicken", "rice and peas", "curry goat", "escovitch fish", "festival"],
+  "substitutions": ["No scotch bonnet -> habanero sparingly", "No allspice berries -> ground allspice", "No coconut milk -> light stock + splash cream"],
+  "donts": ["Avoid bland low-seasoning protein", "Do not skip browning step for stews", "Avoid over-thick gravy"],
+  "snippets": [
+    { "id": "jm-home", "tags": ["comfort"], "text": "Jamaican home comfort should feel warm, aromatic, and deeply seasoned." },
+    { "id": "jm-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Jamaican profile should keep marinade logic but shorten simmer with smaller cuts." },
+    { "id": "jm-jerk", "tags": ["regional", "jerk"], "text": "Jerk cues: pimento, thyme, scallion, garlic, and controlled chile heat." }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "indian-v1",
+  "version": "2026-02-13",
+  "cuisine": "Indian",
+  "personas": ["Dadi Asha"],
+  "pantryAnchors": ["onion", "garlic", "ginger", "turmeric", "cumin", "coriander", "chili"],
+  "techniqueRules": ["Bloom spices in fat.", "Build onion-tomato base before protein/veg.", "Finish with acid or fresh herbs when needed."],
+  "flavorPairings": ["cumin + coriander", "ginger + garlic", "turmeric + chili", "ghee + garam masala"],
+  "signatureDishes": ["dal tadka", "aloo gobi", "chicken curry", "chana masala", "jeera rice"],
+  "substitutions": ["No ghee -> neutral oil + butter", "No garam masala -> cumin + coriander + black pepper", "No paneer -> firm tofu"],
+  "donts": ["Avoid undercooked onion base", "Do not add all spices at end", "Avoid sugar-heavy curry unless requested"],
+  "snippets": [
+    { "id": "in-home", "tags": ["comfort"], "text": "Indian home comfort should center on masala depth and shared table practicality." },
+    { "id": "in-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Indian profile can shorten simmer while preserving tadka and spice layering." },
+    { "id": "in-punjabi", "tags": ["regional", "punjabi"], "text": "Punjabi cues: robust onion-tomato masala, warming spices, hearty portions." },
+    { "id": "in-south", "tags": ["regional", "south-indian"], "text": "South Indian cues: curry leaf tempering, tang, and lighter broth-forward structure." }
+  ]
+}

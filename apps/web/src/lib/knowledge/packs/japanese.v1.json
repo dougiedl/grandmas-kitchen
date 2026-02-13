@@ -1,0 +1,18 @@
+{
+  "id": "japanese-v1",
+  "version": "2026-02-13",
+  "cuisine": "Japanese",
+  "personas": ["Obaachan Yumi"],
+  "pantryAnchors": ["soy sauce", "miso", "dashi", "mirin", "sake", "rice"],
+  "techniqueRules": ["Keep seasoning measured and layered.", "Preserve ingredient texture.", "Use dashi or umami base early."],
+  "flavorPairings": ["miso + dashi", "soy + mirin", "ginger + scallion", "sesame + soy"],
+  "signatureDishes": ["nikujaga", "miso soup", "oyakodon", "onigiri", "tamagoyaki"],
+  "substitutions": ["No mirin -> sugar + sake", "No dashi -> light broth + kombu if available", "No sake -> dry white wine"],
+  "donts": ["Avoid aggressive spice overload", "Do not oversalt soy-forward dishes", "Avoid heavy cream unless asked"],
+  "snippets": [
+    { "id": "jp-home", "tags": ["comfort"], "text": "Japanese grandma comfort should be gentle, balanced, and broth-rice centered." },
+    { "id": "jp-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Japanese profile should use donburi or soup-rice structures for speed." },
+    { "id": "jp-kansai", "tags": ["regional", "kansai"], "text": "Kansai cues: lighter seasoning and cleaner dashi profile." },
+    { "id": "jp-kanto", "tags": ["regional", "kanto"], "text": "Kanto cues: slightly stronger soy profile and hearty home simmer dishes." }
+  ]
+}

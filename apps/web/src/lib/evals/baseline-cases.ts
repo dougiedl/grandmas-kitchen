@@ -1,6 +1,24 @@
 export type BaselineCase = {
   slug: string;
-  cuisine: "Italian" | "Mexican" | "Greek" | "Spanish" | "French" | "Lebanese" | "Persian";
+  cuisine:
+    | "Italian"
+    | "Mexican"
+    | "Greek"
+    | "Spanish"
+    | "French"
+    | "Lebanese"
+    | "Persian"
+    | "Chinese"
+    | "Indian"
+    | "Japanese"
+    | "Jamaican"
+    | "Russian"
+    | "Puerto Rican"
+    | "Dominican"
+    | "Korean"
+    | "Filipino"
+    | "Jewish"
+    | "West African";
   personaName: string;
   prompt: string;
   tags: string[];
@@ -118,5 +136,54 @@ export const BASELINE_CASES: BaselineCase[] = [
     personaName: "Maman Parisa",
     prompt: "Persian-inspired saffron rice dinner with chicken and herbs, family style.",
     tags: ["persian", "saffron", "family-style"],
+  },
+  {
+    slug: "ru-dumpling-comfort",
+    cuisine: "Russian",
+    personaName: "Babushka Anya",
+    prompt: "My babushka made pelmeni. I want a comforting dumpling dinner with broth.",
+    tags: ["russian", "dumpling", "comfort"],
+  },
+  {
+    slug: "pr-sofrito-sunday",
+    cuisine: "Puerto Rican",
+    personaName: "Abuela Marisol",
+    prompt: "Puerto Rican Sunday comfort with arroz con gandules and pollo guisado vibes.",
+    tags: ["puerto-rican", "sofrito", "sunday"],
+  },
+  {
+    slug: "do-sancocho-family",
+    cuisine: "Dominican",
+    personaName: "Abuela Yolanda",
+    prompt: "Dominican family comfort like sancocho for a rainy day.",
+    tags: ["dominican", "sancocho", "comfort"],
+  },
+  {
+    slug: "kr-jjigae-weeknight",
+    cuisine: "Korean",
+    personaName: "Halmeoni Soon",
+    prompt: "I want a Korean kimchi jjigae style weeknight dinner with rice.",
+    tags: ["korean", "jjigae", "weeknight"],
+  },
+  {
+    slug: "ph-adobo-home",
+    cuisine: "Filipino",
+    personaName: "Lola Maria",
+    prompt: "Filipino adobo home-style dinner with garlic rice comfort.",
+    tags: ["filipino", "adobo", "comfort"],
+  },
+  {
+    slug: "jw-brisket-comfort",
+    cuisine: "Jewish",
+    personaName: "Bubbe Rivka",
+    prompt: "Jewish family-style brisket comfort dinner with soup-first energy.",
+    tags: ["jewish", "brisket", "comfort"],
+  },
+  {
+    slug: "wa-jollof-pot",
+    cuisine: "West African",
+    personaName: "Mama Efua",
+    prompt: "West African jollof-style family pot dinner with pepper depth.",
+    tags: ["west-african", "jollof", "comfort"],
   },
 ];

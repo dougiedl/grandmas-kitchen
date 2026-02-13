@@ -41,6 +41,13 @@ const SIGNAL_RULES: SignalRule[] = [
   { key: "in_south_indian", label: "South Indian", cuisine: "Indian", confidence: 0.85, patterns: [/\bsouth indian\b/i, /\bkerala\b/i, /\btamil\b/i] },
   { key: "jp_kansai", label: "Kansai", cuisine: "Japanese", confidence: 0.8, patterns: [/\bkansai\b/i, /\bosaka\b/i, /\bkyoto\b/i] },
   { key: "jm_jerk_house", label: "Jerk-House Style", cuisine: "Jamaican", confidence: 0.85, patterns: [/\bjerk\b/i, /\bscotch bonnet\b/i] },
+  { key: "ru_pelmeni", label: "Russian Dumpling Comfort", cuisine: "Russian", confidence: 0.9, patterns: [/\bpelmeni\b/i, /\bbabushka\b/i] },
+  { key: "pr_sofrito", label: "Puerto Rican Sofrito", cuisine: "Puerto Rican", confidence: 0.9, patterns: [/\bboricua\b/i, /\bsofrito\b/i, /\barroz con gandules\b/i] },
+  { key: "do_sancocho", label: "Dominican Sancocho", cuisine: "Dominican", confidence: 0.9, patterns: [/\bsancocho\b/i, /\bla bandera\b/i] },
+  { key: "kr_jjigae", label: "Korean Jjigae Comfort", cuisine: "Korean", confidence: 0.9, patterns: [/\bkimchi\b/i, /\bjjigae\b/i, /\bhalmeoni\b/i] },
+  { key: "ph_adobo", label: "Filipino Adobo Home", cuisine: "Filipino", confidence: 0.9, patterns: [/\badobo\b/i, /\bsinigang\b/i, /\blola\b/i] },
+  { key: "jw_ashkenazi", label: "Jewish Family Comfort", cuisine: "Jewish", confidence: 0.85, patterns: [/\bbubbe\b/i, /\bmatzo\b/i, /\bkugel\b/i] },
+  { key: "wa_jollof", label: "West African Jollof Comfort", cuisine: "West African", confidence: 0.9, patterns: [/\bjollof\b/i, /\begusi\b/i, /\bgroundnut\b/i] },
 ];
 
 function normalizeCuisine(cuisine: string): string {
@@ -56,6 +63,13 @@ function normalizeCuisine(cuisine: string): string {
   if (lower.includes("ind")) return "Indian";
   if (lower.includes("japan")) return "Japanese";
   if (lower.includes("jama")) return "Jamaican";
+  if (lower.includes("russ")) return "Russian";
+  if (lower.includes("puerto")) return "Puerto Rican";
+  if (lower.includes("dominican")) return "Dominican";
+  if (lower.includes("korean")) return "Korean";
+  if (lower.includes("filip")) return "Filipino";
+  if (lower.includes("jewish") || lower.includes("ashken")) return "Jewish";
+  if (lower.includes("west african") || lower.includes("nigerian") || lower.includes("ghanaian")) return "West African";
   return cuisine;
 }
 

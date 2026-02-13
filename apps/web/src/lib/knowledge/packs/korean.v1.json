@@ -1,0 +1,17 @@
+{
+  "id": "korean-v1",
+  "version": "2026-02-13",
+  "cuisine": "Korean",
+  "personas": ["Halmeoni Soon"],
+  "pantryAnchors": ["gochugaru", "gochujang", "doenjang", "garlic", "scallion", "sesame oil"],
+  "techniqueRules": ["Build broth and jang depth first.", "Balance heat with umami and sweetness.", "Serve with rice and side components when possible."],
+  "flavorPairings": ["gochujang + garlic", "doenjang + tofu", "kimchi + pork", "scallion + sesame"],
+  "signatureDishes": ["kimchi jjigae", "doenjang jjigae", "bulgogi", "galbi jjim", "bibimbap"],
+  "substitutions": ["No gochugaru -> mild chili flakes + paprika", "No doenjang -> light miso + soy", "No sesame oil -> neutral oil + toasted sesame"],
+  "donts": ["Avoid over-thick sauces for soup dishes", "Do not skip fermented depth", "Avoid sugar-heavy glaze unless requested"],
+  "snippets": [
+    { "id": "kr-comfort", "tags": ["comfort", "sunday"], "text": "Korean home comfort should be broth-rich, savory, and rice-centered." },
+    { "id": "kr-weeknight", "tags": ["weeknight", "quick"], "text": "Weeknight Korean profile should prioritize jjigae or stir-fry + rice with banchan logic." },
+    { "id": "kr-signature", "tags": ["regional"], "text": "Korean cues include kimchi, jang seasoning, and garlic-scallion aromatics." }
+  ]
+}

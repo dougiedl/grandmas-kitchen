@@ -31,16 +31,11 @@ type StyleCandidate = {
 };
 
 const UNSUPPORTED_CUISINE_HINTS: Array<{ label: string; pattern: RegExp }> = [
-  { label: "Russian", pattern: /\brussian\b/i },
   { label: "Ukrainian", pattern: /\bukrainian\b/i },
   { label: "Polish", pattern: /\bpolish\b/i },
-  { label: "Jewish", pattern: /\bjewish\b|\bashkenazi\b|\bsephardic\b/i },
-  { label: "Korean", pattern: /\bkorean\b/i },
-  { label: "Filipino", pattern: /\bfilipino\b|\bpinoy\b/i },
   { label: "Haitian", pattern: /\bhaitian\b/i },
-  { label: "West African", pattern: /\bwest african\b|\bnigerian\b|\bghanaian\b|\bsenegalese\b/i },
-  { label: "Dominican", pattern: /\bdominican\b/i },
-  { label: "Puerto Rican", pattern: /\bpuerto rican\b|\bboricua\b/i },
+  { label: "Trinidadian", pattern: /\btrinidadian\b|\btrinbago\b/i },
+  { label: "Guyanese", pattern: /\bguyanese\b/i },
 ];
 
 function detectUnsupportedCuisineHint(text: string): string | null {
@@ -161,6 +156,31 @@ const CUISINE_SIGNAL_PATTERNS: Array<{ cuisine: string; pattern: RegExp; weight:
 
   { cuisine: "Jamaican", pattern: /\bjerk\b/i, weight: 7, tag: "jerk" },
   { cuisine: "Jamaican", pattern: /\bjamaican\b/i, weight: 5, tag: "jamaican" },
+
+  { cuisine: "Russian", pattern: /\brussian\b/i, weight: 7, tag: "russian" },
+  { cuisine: "Russian", pattern: /\bbabushka\b/i, weight: 10, tag: "babushka" },
+  { cuisine: "Russian", pattern: /\bpelmeni\b|\bborscht\b|\bstroganoff\b/i, weight: 9, tag: "russian-signature" },
+
+  { cuisine: "Puerto Rican", pattern: /\bpuerto rican\b|\bboricua\b/i, weight: 8, tag: "puerto-rican" },
+  { cuisine: "Puerto Rican", pattern: /\barroz con gandules\b|\basopao\b|\bpasteles\b/i, weight: 9, tag: "pr-signature" },
+
+  { cuisine: "Dominican", pattern: /\bdominican\b/i, weight: 8, tag: "dominican" },
+  { cuisine: "Dominican", pattern: /\bla bandera\b|\bsancocho\b|\bmoro de guandules\b/i, weight: 9, tag: "dominican-signature" },
+
+  { cuisine: "Korean", pattern: /\bkorean\b/i, weight: 7, tag: "korean" },
+  { cuisine: "Korean", pattern: /\bhalmeoni\b/i, weight: 10, tag: "halmeoni" },
+  { cuisine: "Korean", pattern: /\bkimchi\b|\bjjigae\b|\bdoenjang\b|\bbulgogi\b/i, weight: 9, tag: "korean-signature" },
+
+  { cuisine: "Filipino", pattern: /\bfilipino\b|\bpinoy\b/i, weight: 7, tag: "filipino" },
+  { cuisine: "Filipino", pattern: /\blola\b/i, weight: 10, tag: "lola" },
+  { cuisine: "Filipino", pattern: /\badobo\b|\bsinigang\b|\bpancit\b|\barroz caldo\b/i, weight: 9, tag: "filipino-signature" },
+
+  { cuisine: "Jewish", pattern: /\bjewish\b|\bashkenazi\b|\bsephardic\b/i, weight: 8, tag: "jewish" },
+  { cuisine: "Jewish", pattern: /\bbubbe\b/i, weight: 10, tag: "bubbe" },
+  { cuisine: "Jewish", pattern: /\bbrisket\b|\bkugel\b|\blatkes\b|\bmatzo\b/i, weight: 9, tag: "jewish-signature" },
+
+  { cuisine: "West African", pattern: /\bwest african\b|\bnigerian\b|\bghanaian\b|\bsenegalese\b/i, weight: 8, tag: "west-african" },
+  { cuisine: "West African", pattern: /\bjollof\b|\begusi\b|\bgroundnut\b|\bwaakye\b/i, weight: 9, tag: "west-african-signature" },
 ];
 
 function detectCuisineSignal(text: string): {
