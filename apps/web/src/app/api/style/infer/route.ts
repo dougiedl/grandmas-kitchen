@@ -26,6 +26,8 @@ type StyleCandidate = {
   score: number;
   confidence: number;
   tags: Set<string>;
+  aliasMatchStrength: number;
+  cuisineMatched: boolean;
 };
 
 function normalizeText(input: string): string {
@@ -52,6 +54,25 @@ function matchesPhrase(text: string, phrase: string): boolean {
     return false;
   }
   return text.includes(normalizedPhrase);
+}
+
+type RegionalOverride = {
+  cuisine: string;
+  regionHints: string[];
+  tag: string;
+};
+
+function detectRegionalOverride(text: string): RegionalOverride | null {
+  if (/\b(neapolitan|napoli|naples)\b/i.test(text)) {
+    return { cuisine: "Italian", regionHints: ["neapolitan", "napoli", "naples"], tag: "neapolitan" };
+  }
+  if (/\b(sicilian|sicily)\b/i.test(text)) {
+    return { cuisine: "Italian", regionHints: ["sicilian", "sicily"], tag: "sicilian" };
+  }
+  if (/\b(oaxacan|oaxaca)\b/i.test(text)) {
+    return { cuisine: "Mexican", regionHints: ["oaxacan", "oaxaca"], tag: "oaxacan" };
+  }
+  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -110,6 +131,7 @@ export async function POST(request: NextRequest) {
 
   const text = normalizeText(message);
   const tokens = tokenize(text);
+  const regionalOverride = detectRegionalOverride(text);
 
   let preferenceRows: Array<{ style_id: string; weight: string }> = [];
   try {
@@ -133,6 +155,8 @@ export async function POST(request: NextRequest) {
   const candidates: StyleCandidate[] = stylesResult.rows.map((style) => {
     const tags = new Set<string>();
     let score = 0;
+    let aliasMatchStrength = 0;
+    let cuisineMatched = false;
 
     const cuisineText = normalizeText(style.cuisine);
     const regionText = normalizeText(style.region ?? "");
@@ -141,13 +165,16 @@ export async function POST(request: NextRequest) {
 
     for (const alias of aliases) {
       if (matchesPhrase(text, alias)) {
-        score += alias.split(" ").length >= 2 ? 6 : 4;
+        const strength = alias.split(" ").length >= 2 ? 2 : 1;
+        aliasMatchStrength += strength;
+        score += strength >= 2 ? 8 : 5;
         tags.add(alias);
       }
     }
 
     if (cuisineText && matchesPhrase(text, cuisineText)) {
       score += 4;
+      cuisineMatched = true;
       tags.add(style.cuisine.toLowerCase());
     }
 
@@ -167,7 +194,25 @@ export async function POST(request: NextRequest) {
       }
       if (cuisineText.includes(token)) {
         score += 1.25;
+        cuisineMatched = true;
         tags.add(token);
+      }
+    }
+
+    if (regionalOverride) {
+      if (style.cuisine === regionalOverride.cuisine) {
+        score += 6;
+        const matchesRegionHint =
+          regionalOverride.regionHints.some((hint) => regionText.includes(hint)) ||
+          aliases.some((alias) => regionalOverride.regionHints.some((hint) => alias.includes(hint)));
+        if (matchesRegionHint) {
+          score += 18;
+          aliasMatchStrength += 3;
+          tags.add(regionalOverride.tag);
+          tags.add("regional-override");
+        }
+      } else {
+        score -= 8;
       }
     }
 
@@ -193,12 +238,24 @@ export async function POST(request: NextRequest) {
       score,
       confidence: 0,
       tags,
+      aliasMatchStrength,
+      cuisineMatched,
     };
   });
 
-  candidates.sort((a, b) => b.score - a.score);
+  candidates.sort((a, b) => {
+    if (b.aliasMatchStrength !== a.aliasMatchStrength) {
+      return b.aliasMatchStrength - a.aliasMatchStrength;
+    }
+    if (b.cuisineMatched !== a.cuisineMatched) {
+      return Number(b.cuisineMatched) - Number(a.cuisineMatched);
+    }
+    return b.score - a.score;
+  });
   const top = candidates[0];
-  const topBucket = candidates.slice(0, 5);
+  const topBucket = candidates
+    .filter((candidate) => candidate.cuisine === top.cuisine)
+    .slice(0, 5);
   const totalTop = topBucket.reduce((sum, item) => sum + Math.max(item.score, 0), 0);
 
   const primaryConfidence =
@@ -207,8 +264,14 @@ export async function POST(request: NextRequest) {
       : 0.4;
   top.confidence = primaryConfidence;
 
-  const alternatives = candidates
-    .slice(1, 4)
+  const firstTurn = !body.threadId;
+  const alternativesPool = firstTurn
+    ? candidates.filter((candidate) => candidate.cuisine === top.cuisine)
+    : candidates;
+
+  const alternatives = alternativesPool
+    .filter((candidate) => candidate.id !== top.id)
+    .slice(0, 3)
     .map((item) => {
       const confidence =
         totalTop > 0
