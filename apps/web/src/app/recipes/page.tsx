@@ -37,9 +37,33 @@ export default async function RecipesPage() {
   }
 
   const pool = getPool();
+  const recipeColumnsResult = await pool.query<{ column_name: string }>(
+    `
+      select column_name
+      from information_schema.columns
+      where table_schema = 'public' and table_name = 'recipes'
+    `,
+  );
+  const recipeColumnSet = new Set(recipeColumnsResult.rows.map((row) => row.column_name));
+  const favoriteSelect = recipeColumnSet.has("is_favorite")
+    ? "r.is_favorite"
+    : "false::boolean as is_favorite";
+  const promotedSelect = recipeColumnSet.has("is_promoted")
+    ? "r.is_promoted"
+    : "false::boolean as is_promoted";
+
   const result = await pool.query<RecipeRecord>(
     `
-      select r.id, r.title, r.cuisine, r.servings, r.total_minutes, r.is_favorite, r.is_promoted, r.created_at, r.recipe_json
+      select
+        r.id,
+        r.title,
+        r.cuisine,
+        r.servings,
+        r.total_minutes,
+        ${favoriteSelect},
+        ${promotedSelect},
+        r.created_at,
+        r.recipe_json
       from recipes r
       join users u on u.id = r.user_id
       where u.email = $1
