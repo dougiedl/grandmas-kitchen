@@ -51,6 +51,13 @@ export type EvalRunSummary = {
     status: "pass" | "fail" | "pending";
     reasons: string[];
   };
+  conversationQuality: {
+    avgScore: number;
+    scoredCases: number;
+    weakContextCount: number;
+    weakTroubleshootCount: number;
+    totalCases: number;
+  };
   cuisineBreakdown: Array<{
     cuisine: string;
     avgScore: number;

@@ -152,6 +152,23 @@ export function EvalHarnessClient() {
       {summary ? (
         <div className="admin-grid">
           <article className="admin-card">
+            <h3>Conversation Quality</h3>
+            <ul>
+              <li>
+                Avg score: {summary.conversationQuality.avgScore.toFixed(2)} ({summary.conversationQuality.scoredCases}/
+                {summary.conversationQuality.totalCases} scored)
+              </li>
+              <li>
+                Weak context retention: {summary.conversationQuality.weakContextCount}/
+                {summary.conversationQuality.totalCases}
+              </li>
+              <li>
+                Weak troubleshooting: {summary.conversationQuality.weakTroubleshootCount}/
+                {summary.conversationQuality.totalCases}
+              </li>
+            </ul>
+          </article>
+          <article className="admin-card">
             <h3>Cuisine Breakdown</h3>
             <ul>
               {summary.cuisineBreakdown.map((item) => (

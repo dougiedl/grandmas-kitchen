@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { isAdminEmail } from "@/lib/auth/is-admin";
 import { getPool } from "@/lib/db/pool";
+import { parseConversationScore } from "@/lib/evals/conversation-eval";
 import type { EvalResultRow, EvalRunRow, EvalRunSummary } from "@/lib/evals/types";
 
 function toNumber(value: string | number | null | undefined): number {
@@ -77,6 +78,22 @@ export async function GET() {
   const worstScore = rows.length > 0 ? Math.min(...rows.map((row) => toNumber(row.total_score))) : 0;
   const weakAuthenticityCount = rows.filter((row) => (row.notes ?? "").includes("authenticity_weak")).length;
   const weakAuthRate = rows.length > 0 ? weakAuthenticityCount / rows.length : 1;
+  const conversationScores = rows
+    .map((row) => parseConversationScore(row.notes))
+    .filter((value): value is number => value !== null);
+  const averageConversationScore =
+    conversationScores.length > 0
+      ? Math.round((conversationScores.reduce((sum, value) => sum + value, 0) / conversationScores.length) * 100) /
+        100
+      : 0;
+  const weakConversationContextCount = rows.filter((row) =>
+    (row.notes ?? "").includes("conversation_context_weak"),
+  ).length;
+  const weakConversationTroubleshootCount = rows.filter((row) =>
+    (row.notes ?? "").includes("conversation_troubleshoot_weak"),
+  ).length;
+  const weakContextRate = rows.length > 0 ? weakConversationContextCount / rows.length : 1;
+  const weakTroubleshootRate = rows.length > 0 ? weakConversationTroubleshootCount / rows.length : 1;
 
   const cuisineMap = new Map<string, { total: number; sum: number; weakAuthenticityCount: number }>();
   for (const row of rows) {
@@ -120,6 +137,25 @@ export async function GET() {
     if (weakAuthRate > 0.2) {
       gateReasons.push(`Authenticity weak rate too high (${(weakAuthRate * 100).toFixed(1)}%, need <= 20%).`);
     }
+    if (conversationScores.length === 0) {
+      gateReasons.push("Conversation quality probes missing (rerun harness).");
+    } else {
+      if (averageConversationScore < 80) {
+        gateReasons.push(
+          `Conversation score below threshold (got ${averageConversationScore.toFixed(2)}, need >= 80.00).`,
+        );
+      }
+      if (weakContextRate > 0.25) {
+        gateReasons.push(
+          `Conversation context retention weak rate too high (${(weakContextRate * 100).toFixed(1)}%, need <= 25%).`,
+        );
+      }
+      if (weakTroubleshootRate > 0.25) {
+        gateReasons.push(
+          `Conversation troubleshooting weak rate too high (${(weakTroubleshootRate * 100).toFixed(1)}%, need <= 25%).`,
+        );
+      }
+    }
   }
 
   const summary: EvalRunSummary = {
@@ -135,6 +171,13 @@ export async function GET() {
     gate: {
       status: isInProgress ? "pending" : gateReasons.length === 0 ? "pass" : "fail",
       reasons: gateReasons,
+    },
+    conversationQuality: {
+      avgScore: averageConversationScore,
+      scoredCases: conversationScores.length,
+      weakContextCount: weakConversationContextCount,
+      weakTroubleshootCount: weakConversationTroubleshootCount,
+      totalCases: rows.length,
     },
     cuisineBreakdown,
     diagnostics,
