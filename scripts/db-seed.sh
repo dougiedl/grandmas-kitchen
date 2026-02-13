@@ -24,5 +24,6 @@ run_sql_file() {
 }
 
 run_sql_file db/seeds/personas.sql
+run_sql_file db/seeds/style-catalog.sql
 
 echo "Seed data applied successfully."
