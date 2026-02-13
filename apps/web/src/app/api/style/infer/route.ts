@@ -38,7 +38,7 @@ function tokenize(input: string): string[] {
   return input
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 3);
+    .filter((token) => token.length >= 4);
 }
 
 function boundedConfidence(raw: number): number {
@@ -54,6 +54,44 @@ function matchesPhrase(text: string, phrase: string): boolean {
     return false;
   }
   return text.includes(normalizedPhrase);
+}
+
+const STOP_TOKENS = new Set([
+  "this",
+  "that",
+  "with",
+  "from",
+  "help",
+  "make",
+  "grandma",
+  "cooking",
+  "would",
+  "like",
+  "want",
+  "miss",
+  "her",
+  "your",
+  "their",
+  "them",
+  "what",
+  "when",
+  "where",
+  "which",
+  "could",
+  "should",
+  "please",
+  "have",
+  "into",
+  "about",
+]);
+
+function toWordSet(value: string): Set<string> {
+  return new Set(
+    value
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((token) => token.length >= 4 && !STOP_TOKENS.has(token)),
+  );
 }
 
 type RegionalOverride = {
@@ -204,7 +242,8 @@ export async function POST(request: NextRequest) {
   }
 
   const text = normalizeText(message);
-  const tokens = tokenize(text);
+  const tokens = tokenize(text).filter((token) => !STOP_TOKENS.has(token));
+  const textWordSet = toWordSet(text);
   const regionalOverride = detectRegionalOverride(text);
   const cuisineSignal = detectCuisineSignal(text);
 
@@ -237,6 +276,9 @@ export async function POST(request: NextRequest) {
     const regionText = normalizeText(style.region ?? "");
     const labelText = normalizeText(style.label);
     const aliases = (style.aliases ?? []).map((alias) => normalizeText(alias));
+    const labelWordSet = toWordSet(labelText);
+    const regionWordSet = toWordSet(regionText);
+    const cuisineWordSet = toWordSet(cuisineText);
 
     for (const alias of aliases) {
       if (matchesPhrase(text, alias)) {
@@ -259,19 +301,23 @@ export async function POST(request: NextRequest) {
     }
 
     for (const token of tokens) {
-      if (labelText.includes(token)) {
+      if (labelWordSet.has(token)) {
         score += 1.25;
         tags.add(token);
       }
-      if (regionText.includes(token)) {
+      if (regionWordSet.has(token)) {
         score += 1.5;
         tags.add(token);
       }
-      if (cuisineText.includes(token)) {
+      if (cuisineWordSet.has(token)) {
         score += 1.25;
         cuisineMatched = true;
         tags.add(token);
       }
+    }
+
+    if (tokens.length > 0 && [...labelWordSet].some((word) => textWordSet.has(word))) {
+      score += 0.8;
     }
 
     if (regionalOverride) {
