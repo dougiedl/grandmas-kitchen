@@ -30,6 +30,24 @@ type StyleCandidate = {
   cuisineMatched: boolean;
 };
 
+const UNSUPPORTED_CUISINE_HINTS: Array<{ label: string; pattern: RegExp }> = [
+  { label: "Russian", pattern: /\brussian\b/i },
+  { label: "Ukrainian", pattern: /\bukrainian\b/i },
+  { label: "Polish", pattern: /\bpolish\b/i },
+  { label: "Jewish", pattern: /\bjewish\b|\bashkenazi\b|\bsephardic\b/i },
+  { label: "Korean", pattern: /\bkorean\b/i },
+  { label: "Filipino", pattern: /\bfilipino\b|\bpinoy\b/i },
+  { label: "Haitian", pattern: /\bhaitian\b/i },
+  { label: "West African", pattern: /\bwest african\b|\bnigerian\b|\bghanaian\b|\bsenegalese\b/i },
+  { label: "Dominican", pattern: /\bdominican\b/i },
+  { label: "Puerto Rican", pattern: /\bpuerto rican\b|\bboricua\b/i },
+];
+
+function detectUnsupportedCuisineHint(text: string): string | null {
+  const hit = UNSUPPORTED_CUISINE_HINTS.find((item) => item.pattern.test(text));
+  return hit?.label ?? null;
+}
+
 function normalizeText(input: string): string {
   return input.toLowerCase().replace(/\s+/g, " ").trim();
 }
@@ -246,6 +264,7 @@ export async function POST(request: NextRequest) {
   const textWordSet = toWordSet(text);
   const regionalOverride = detectRegionalOverride(text);
   const cuisineSignal = detectCuisineSignal(text);
+  const unsupportedCuisineHint = detectUnsupportedCuisineHint(text);
 
   let preferenceRows: Array<{ style_id: string; weight: string }> = [];
   try {
@@ -384,6 +403,9 @@ export async function POST(request: NextRequest) {
     return b.score - a.score;
   });
   const top = candidates[0];
+  if (!top) {
+    return NextResponse.json({ error: "No style candidates available" }, { status: 400 });
+  }
   const topBucket = candidates
     .filter((candidate) => candidate.cuisine === top.cuisine)
     .slice(0, 5);
@@ -420,6 +442,46 @@ export async function POST(request: NextRequest) {
 
   const reasoningTags = [...top.tags].slice(0, 8);
   const mergedReasoningTags = [...new Set([...cuisineSignal.tags, ...reasoningTags])].slice(0, 8);
+  const strongEvidence =
+    top.aliasMatchStrength >= 2 ||
+    Boolean(regionalOverride) ||
+    Boolean(cuisineSignal.cuisine) ||
+    top.score >= 6;
+
+  if (unsupportedCuisineHint || !strongEvidence || primaryConfidence < 0.55) {
+    const suggestedCuisines = [...new Set(stylesResult.rows.map((row) => row.cuisine))].slice(0, 12);
+
+    await pool.query(
+      `
+        insert into style_inference_events (
+          id, user_id, thread_id, input_excerpt, inferred_style_id, selected_style_id, confidence, accepted, event_props
+        )
+        values ($1, $2, $3, $4, null, null, $5, null, $6::jsonb)
+      `,
+      [
+        randomUUID(),
+        userId,
+        body.threadId ?? null,
+        message.slice(0, 280),
+        Number(primaryConfidence.toFixed(2)),
+        JSON.stringify({
+          reasoningTags: mergedReasoningTags,
+          requiresClarification: true,
+          unsupportedCuisineHint,
+          currentStyleId: body.currentStyleId ?? null,
+        }),
+      ],
+    );
+
+    return NextResponse.json({
+      requiresClarification: true,
+      clarificationPrompt: unsupportedCuisineHint
+        ? `I heard ${unsupportedCuisineHint} family cooking. Tell me one signature dish or region, and I can match grandma style more accurately.`
+        : "I need one more cue before choosing a grandma style. What culture or region did your grandma cook from?",
+      suggestedCuisines,
+      reasoningTags: mergedReasoningTags,
+    });
+  }
 
   await pool.query(
     `

@@ -76,8 +76,11 @@ type InferredStyle = {
 };
 
 type StyleInferenceResult = {
-  primaryStyle: InferredStyle;
-  alternatives: InferredStyle[];
+  primaryStyle?: InferredStyle;
+  alternatives?: InferredStyle[];
+  requiresClarification?: boolean;
+  clarificationPrompt?: string;
+  suggestedCuisines?: string[];
   reasoningTags: string[];
   originalMessage: string;
 };
@@ -585,6 +588,7 @@ export function ChatClient({
       return;
     }
 
+    const inferredStyleId = styleInference.primaryStyle?.id ?? style.id;
     const personaId = inferPersonaIdFromCuisine(style.cuisine);
     setIsLoading(true);
     setError(null);
@@ -594,7 +598,7 @@ export function ChatClient({
         personaId,
         styleSelection: {
           selectedStyleId: style.id,
-          inferredStyleId: styleInference.primaryStyle.id,
+          inferredStyleId,
           confidence: style.confidence,
           reasoningTags: styleInference.reasoningTags,
           selectedStyle: {
@@ -608,7 +612,7 @@ export function ChatClient({
       await trackEvent("chat_style_selected", {
         source: "inference_prompt",
         selectedStyleId: style.id,
-        inferredStyleId: styleInference.primaryStyle.id,
+        inferredStyleId,
         confidence: style.confidence,
       });
     } catch (cause) {
@@ -616,6 +620,17 @@ export function ChatClient({
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function onUseClarificationCuisine(cuisine: string) {
+    if (!styleInference) {
+      return;
+    }
+
+    setInput(`${styleInference.originalMessage} My grandma's cooking was ${cuisine}.`);
+    setStyleInference(null);
+    setShowStyleAlternatives(false);
+    composerTextareaRef.current?.focus();
   }
 
   async function handleThreadStyleSwitch(style: StyleSearchResult) {
@@ -692,23 +707,32 @@ export function ChatClient({
           }
 
           const inferData = (await inferResponse.json()) as {
-            primaryStyle: InferredStyle;
-            alternatives: InferredStyle[];
+            primaryStyle?: InferredStyle;
+            alternatives?: InferredStyle[];
+            requiresClarification?: boolean;
+            clarificationPrompt?: string;
+            suggestedCuisines?: string[];
             reasoningTags: string[];
           };
 
           setStyleInference({
             primaryStyle: inferData.primaryStyle,
-            alternatives: inferData.alternatives,
+            alternatives: inferData.alternatives ?? [],
+            requiresClarification: inferData.requiresClarification ?? false,
+            clarificationPrompt: inferData.clarificationPrompt,
+            suggestedCuisines: inferData.suggestedCuisines ?? [],
             reasoningTags: inferData.reasoningTags,
             originalMessage: content,
           });
           setShowStyleAlternatives(false);
 
-          await trackEvent("chat_style_inference_shown", {
-            primaryStyleId: inferData.primaryStyle.id,
-            confidence: inferData.primaryStyle.confidence,
-          });
+          await trackEvent(
+            inferData.requiresClarification ? "chat_style_inference_clarification" : "chat_style_inference_shown",
+            {
+              primaryStyleId: inferData.primaryStyle?.id ?? null,
+              confidence: inferData.primaryStyle?.confidence ?? null,
+            },
+          );
           return;
         } catch (cause) {
           setError(cause instanceof Error ? cause.message : "Unable to infer style, using default flow");
@@ -1010,40 +1034,70 @@ export function ChatClient({
         {styleInference && !threadId ? (
           <section className="style-inference-panel">
             <p className="section-kicker">Style suggestion</p>
-            <h4>
-              {styleInference.primaryStyle.label} ({styleInference.primaryStyle.cuisine})
-            </h4>
-            <p>
-              Confidence: {Math.round(styleInference.primaryStyle.confidence * 100)}%
-              {styleInference.primaryStyle.region ? ` • ${styleInference.primaryStyle.region}` : ""}
-            </p>
+            {styleInference.requiresClarification ? (
+              <>
+                <h4>Need one more clue</h4>
+                <p>
+                  {styleInference.clarificationPrompt ??
+                    "Tell me your grandma's culture or region so I can choose the right cooking tradition."}
+                </p>
+              </>
+            ) : styleInference.primaryStyle ? (
+              <>
+                <h4>
+                  {styleInference.primaryStyle.label} ({styleInference.primaryStyle.cuisine})
+                </h4>
+                <p>
+                  Confidence: {Math.round(styleInference.primaryStyle.confidence * 100)}%
+                  {styleInference.primaryStyle.region ? ` • ${styleInference.primaryStyle.region}` : ""}
+                </p>
+              </>
+            ) : (
+              <>
+                <h4>Need one more clue</h4>
+                <p>Tell me your grandma&apos;s culture or region so I can choose the right style.</p>
+              </>
+            )}
             {styleInference.reasoningTags.length > 0 ? (
               <p className="style-inference-reason">
                 Why this style: {styleInference.reasoningTags.join(", ")}
               </p>
             ) : null}
             <div className="style-inference-actions">
-              <button
-                type="button"
-                onClick={() => handleStyleSelection(styleInference.primaryStyle)}
-                disabled={isLoading}
-              >
-                Use This Style
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowStyleAlternatives((current) => !current)}
-                disabled={isLoading || styleInference.alternatives.length === 0}
-              >
-                {showStyleAlternatives ? "Hide Options" : "Show Options"}
-              </button>
+              {!styleInference.requiresClarification && styleInference.primaryStyle ? (
+                <button
+                  type="button"
+                  onClick={() => handleStyleSelection(styleInference.primaryStyle as InferredStyle)}
+                  disabled={isLoading}
+                >
+                  Use This Style
+                </button>
+              ) : null}
+              {!styleInference.requiresClarification ? (
+                <button
+                  type="button"
+                  onClick={() => setShowStyleAlternatives((current) => !current)}
+                  disabled={isLoading || (styleInference.alternatives?.length ?? 0) === 0}
+                >
+                  {showStyleAlternatives ? "Hide Options" : "Show Options"}
+                </button>
+              ) : null}
               <button type="button" onClick={() => setStyleInference(null)} disabled={isLoading}>
                 Decide Later
               </button>
             </div>
+            {styleInference.requiresClarification && (styleInference.suggestedCuisines?.length ?? 0) > 0 ? (
+              <div className="style-inference-options">
+                {styleInference.suggestedCuisines?.slice(0, 8).map((cuisine) => (
+                  <button key={cuisine} type="button" onClick={() => onUseClarificationCuisine(cuisine)} disabled={isLoading}>
+                    {cuisine}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {showStyleAlternatives ? (
               <div className="style-inference-options">
-                {styleInference.alternatives.map((style) => (
+                {(styleInference.alternatives ?? []).map((style) => (
                   <button key={style.id} type="button" onClick={() => handleStyleSelection(style)} disabled={isLoading}>
                     {style.label} ({Math.round(style.confidence * 100)}%)
                   </button>
