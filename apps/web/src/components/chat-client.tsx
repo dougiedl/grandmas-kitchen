@@ -6,6 +6,9 @@ import type { RegenerationStyle } from "@/lib/chat/recipe-schema";
 import { ChatCommunityDiscovery } from "@/components/chat-community-discovery";
 import { LAUNCH_PERSONAS } from "@/lib/personas/launch-personas";
 
+const RECENT_STYLE_KEY = "gk_recent_styles_v1";
+const RECENT_STYLE_LIMIT = 8;
+
 type Message = {
   id: string;
   role: "user" | "assistant" | "system";
@@ -105,9 +108,11 @@ export function ChatClient({
   const [styleInference, setStyleInference] = useState<StyleInferenceResult | null>(null);
   const [showStyleAlternatives, setShowStyleAlternatives] = useState(false);
   const [activeStyle, setActiveStyle] = useState<InferredStyle | null>(null);
-  const [showStyleSwitcher, setShowStyleSwitcher] = useState(false);
+  const [showStylePicker, setShowStylePicker] = useState(false);
   const [styleSearchQuery, setStyleSearchQuery] = useState("");
   const [styleSearchResults, setStyleSearchResults] = useState<StyleSearchResult[]>([]);
+  const [recentStyles, setRecentStyles] = useState<StyleSearchResult[]>([]);
+  const [highlightedStyleId, setHighlightedStyleId] = useState<string | null>(null);
   const [styleSwitchLoading, setStyleSwitchLoading] = useState(false);
   const startThreadInFlightRef = useRef(false);
   const chatWindowRef = useRef<HTMLDivElement | null>(null);
@@ -300,8 +305,38 @@ export function ChatClient({
   }, [input]);
 
   useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(RECENT_STYLE_KEY);
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw) as StyleSearchResult[];
+      if (Array.isArray(parsed)) {
+        setRecentStyles(parsed.slice(0, RECENT_STYLE_LIMIT));
+      }
+    } catch {
+      setRecentStyles([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showStylePicker) {
+      return;
+    }
+
+    function onEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowStylePicker(false);
+      }
+    }
+
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [showStylePicker]);
+
+  useEffect(() => {
     async function searchStyles() {
-      if (!showStyleSwitcher || !threadId) {
+      if (!showStylePicker || !threadId) {
         return;
       }
 
@@ -328,7 +363,31 @@ export function ChatClient({
     }
 
     void searchStyles();
-  }, [activeStyle?.cuisine, showStyleSwitcher, styleSearchQuery, threadId]);
+  }, [activeStyle?.cuisine, showStylePicker, styleSearchQuery, threadId]);
+
+  useEffect(() => {
+    if (!showStylePicker || styleSearchResults.length === 0) {
+      setHighlightedStyleId(null);
+      return;
+    }
+
+    const hasCurrent = styleSearchResults.some((style) => style.id === highlightedStyleId);
+    if (!hasCurrent) {
+      setHighlightedStyleId(styleSearchResults[0].id);
+    }
+  }, [highlightedStyleId, showStylePicker, styleSearchResults]);
+
+  function saveRecentStyle(style: StyleSearchResult) {
+    setRecentStyles((current) => {
+      const next = [style, ...current.filter((item) => item.id !== style.id)].slice(0, RECENT_STYLE_LIMIT);
+      try {
+        window.localStorage.setItem(RECENT_STYLE_KEY, JSON.stringify(next));
+      } catch {
+        // ignore localStorage errors
+      }
+      return next;
+    });
+  }
 
   async function sendMessage(payload: SendMessagePayload) {
     if (!threadId) {
@@ -590,11 +649,13 @@ export function ChatClient({
         region: style.region,
         confidence: activeStyle?.confidence ?? 0.55,
       });
-      setShowStyleSwitcher(false);
+      saveRecentStyle(style);
+      setShowStylePicker(false);
       await trackEvent("chat_style_switched", {
         threadId,
         selectedStyleId: style.id,
         cuisine: style.cuisine,
+        source: "style_picker_modal",
       });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to switch style");
@@ -709,7 +770,7 @@ export function ChatClient({
     setThreadId(thread.id);
     setActivePersonaId(thread.persona_id);
     setStyleInference(null);
-    setShowStyleSwitcher(false);
+    setShowStylePicker(false);
     setStyleSearchQuery("");
     setStyleSearchResults([]);
     setMessages([]);
@@ -829,6 +890,54 @@ export function ChatClient({
     });
   }
 
+  const groupedStyleResults = useMemo(() => {
+    const groups = new Map<string, StyleSearchResult[]>();
+    for (const style of styleSearchResults) {
+      const key = style.cuisine || "Other";
+      const existing = groups.get(key) ?? [];
+      existing.push(style);
+      groups.set(key, existing);
+    }
+
+    return Array.from(groups.entries()).map(([cuisine, styles]) => ({ cuisine, styles }));
+  }, [styleSearchResults]);
+
+  function moveStyleHighlight(direction: 1 | -1) {
+    if (styleSearchResults.length === 0) {
+      return;
+    }
+    const currentIndex = highlightedStyleId
+      ? styleSearchResults.findIndex((style) => style.id === highlightedStyleId)
+      : -1;
+    const nextIndex =
+      currentIndex < 0
+        ? 0
+        : (currentIndex + direction + styleSearchResults.length) % styleSearchResults.length;
+    setHighlightedStyleId(styleSearchResults[nextIndex]?.id ?? null);
+  }
+
+  function onStyleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveStyleHighlight(1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveStyleHighlight(-1);
+      return;
+    }
+
+    if (event.key === "Enter" && highlightedStyleId) {
+      event.preventDefault();
+      const selected = styleSearchResults.find((style) => style.id === highlightedStyleId);
+      if (selected) {
+        void handleThreadStyleSwitch(selected);
+      }
+    }
+  }
+
   return (
     <section className={`chat-layout kitchen-theme ${kitchenThemeClass}`}>
       <aside className="chat-sidebar">
@@ -887,40 +996,15 @@ export function ChatClient({
             <div className="style-bar-actions">
               <button
                 type="button"
-                onClick={() => setShowStyleSwitcher((current) => !current)}
+                onClick={() => setShowStylePicker(true)}
                 disabled={isLoading || styleSwitchLoading}
               >
-                {showStyleSwitcher ? "Close" : "Change"}
+                Change
               </button>
             </div>
           </section>
         ) : null}
 
-        {threadId && showStyleSwitcher ? (
-          <section className="style-switcher-panel">
-            <label htmlFor="style-search-input">Search style</label>
-            <input
-              id="style-search-input"
-              type="text"
-              value={styleSearchQuery}
-              onChange={(event) => setStyleSearchQuery(event.target.value)}
-              placeholder="e.g. Sicilian, Oaxacan, Punjabi, Kansai"
-            />
-            <div className="style-switcher-results">
-              {styleSearchResults.map((style) => (
-                <button
-                  key={style.id}
-                  type="button"
-                  onClick={() => handleThreadStyleSwitch(style)}
-                  disabled={styleSwitchLoading}
-                >
-                  {style.label} ({style.cuisine})
-                </button>
-              ))}
-              {styleSearchResults.length === 0 ? <p>No matching styles yet.</p> : null}
-            </div>
-          </section>
-        ) : null}
         {error ? <p className="error-text">{error}</p> : null}
 
         {styleInference && !threadId ? (
@@ -1100,6 +1184,77 @@ export function ChatClient({
               })}
             </div>
           </section>
+        ) : null}
+
+        {threadId && showStylePicker ? (
+          <div className="style-picker-backdrop" onClick={() => setShowStylePicker(false)}>
+            <section
+              className="style-picker-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="style-picker-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="style-picker-header">
+                <h4 id="style-picker-title">Switch Grandma Style</h4>
+                <button type="button" onClick={() => setShowStylePicker(false)} aria-label="Close style picker">
+                  Close
+                </button>
+              </div>
+
+              <label htmlFor="style-search-input">Search by cuisine, region, or family style</label>
+              <input
+                id="style-search-input"
+                type="text"
+                value={styleSearchQuery}
+                onChange={(event) => setStyleSearchQuery(event.target.value)}
+                onKeyDown={onStyleSearchKeyDown}
+                placeholder="e.g. Sicilian, Oaxacan, Punjabi, Kansai"
+                autoFocus
+              />
+
+              {recentStyles.length > 0 ? (
+                <section className="style-picker-recent">
+                  <p>Recent picks</p>
+                  <div className="style-chip-row">
+                    {recentStyles.map((style) => (
+                      <button
+                        key={`recent-${style.id}`}
+                        type="button"
+                        onClick={() => handleThreadStyleSwitch(style)}
+                        disabled={styleSwitchLoading}
+                      >
+                        {style.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              <div className="style-picker-results">
+                {groupedStyleResults.map((group) => (
+                  <section key={group.cuisine} className="style-picker-group">
+                    <h5>{group.cuisine}</h5>
+                    <div className="style-switcher-results">
+                      {group.styles.map((style) => (
+                        <button
+                          key={style.id}
+                          type="button"
+                          onClick={() => handleThreadStyleSwitch(style)}
+                          disabled={styleSwitchLoading}
+                          className={highlightedStyleId === style.id ? "style-result-active" : undefined}
+                        >
+                          {style.label}
+                          {style.region ? ` • ${style.region}` : ""}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+                {styleSearchResults.length === 0 ? <p>No matching styles yet.</p> : null}
+              </div>
+            </section>
+          </div>
         ) : null}
       </div>
     </section>
